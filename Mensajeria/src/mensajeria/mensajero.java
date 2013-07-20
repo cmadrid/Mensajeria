@@ -16,6 +16,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -41,6 +42,16 @@ public class mensajero extends javax.swing.JFrame {
    
     public mensajero() {
         initComponents();
+        
+        DefaultListModel modelo = new DefaultListModel();
+
+        for(int i = 1; i<=10; i++){
+                modelo.addElement("hola"+i);
+        }
+
+        Usuarios.setModel(modelo);
+        
+        
         editor.setContentType("text/html");
         editor.setEditable(false);
         //editor.setEnabled(false);
@@ -57,12 +68,14 @@ public class mensajero extends javax.swing.JFrame {
             System.out.println("1");
             int vueltas = 0;
             try {
-
+                
                 mens = new Socket(DIR,PUERTO);
                 System.out.println();
                 vueltas=6;
                 System.out.println("2");
                 id = Integer.parseInt((new DataInputStream((mens.getInputStream()))).readUTF());
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(NICK+"\n");
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(NICK+"\n");
                 Thread llega = new Thread(llegada);
                 llega.start();
             } catch (Exception e) {
@@ -113,7 +126,7 @@ System.out.println("ya estas avisado");
                 int pos=0;
                 DataInputStream entra = new DataInputStream((mens.getInputStream()));
                 String mens = entra.readUTF();
-                String men = mens.substring(20);
+                String men = mens.substring(13);
                 if(mens.subSequence(13, 20).equals("$$OFF$$"))
                        cerrando();
                 pos=19;
@@ -174,6 +187,9 @@ System.out.println("ya estas avisado");
         jLabel1 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         editor = new javax.swing.JEditorPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        Usuarios = new javax.swing.JList();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -187,6 +203,10 @@ System.out.println("ya estas avisado");
 
         jScrollPane2.setViewportView(editor);
 
+        jScrollPane1.setViewportView(Usuarios);
+
+        jLabel2.setText("Usuarios Conectados");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -199,9 +219,16 @@ System.out.println("ya estas avisado");
                     .addGroup(layout.createSequentialGroup()
                         .addGap(39, 39, 39)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(msj, javax.swing.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
-                .addContainerGap(40, Short.MAX_VALUE))
+                            .addComponent(msj)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jLabel2)))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -209,7 +236,12 @@ System.out.println("ya estas avisado");
                 .addContainerGap(21, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(28, 28, 28)
                 .addComponent(msj, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(46, 46, 46))
@@ -277,8 +309,11 @@ System.out.println("ya estas avisado");
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JList Usuarios;
     private javax.swing.JEditorPane editor;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField msj;
     // End of variables declaration//GEN-END:variables

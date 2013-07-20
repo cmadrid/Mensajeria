@@ -7,6 +7,7 @@ package server;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -24,11 +25,12 @@ public class Servidor {
     int PUERTO = 5000;
     DataOutputStream salida;
     String mensajeRecibido;
-    BufferedReader entrada;
     ServerSocket servidor;
-    Socket usuario;
+    Socket socket;
+    ObjectInputStream entrada;
+    ArrayList<Socket> sockets = new ArrayList<Socket>();
     ArrayList usuarios = new ArrayList();
-    ArrayList entradas = new ArrayList();
+    ArrayList<ObjectInputStream> entradas = new ArrayList<ObjectInputStream>();
     ArrayList salidas = new ArrayList();
     ArrayList escrituras = new ArrayList();
     int num = 0;
@@ -60,7 +62,7 @@ public class Servidor {
         try {
             servidor.close();
             probando.detener();
-            System.out.println(usuarios.size());
+            System.out.println(sockets.size());
             System.out.println(entradas.size());
             System.out.println(salidas.size());
             System.out.println(escrituras.size());
@@ -68,7 +70,7 @@ public class Servidor {
                 ((DataOutputStream)salidas.get(i)).writeUTF("$$$$$$$$$$$$$$$OFF$$El servidor ha sido cerrado.");
                 ((Escritura)escrituras.get(i)).detener();
             }
-            usuarios = new ArrayList();
+            sockets = new ArrayList();
             entradas = new ArrayList();
             salidas = new ArrayList();
             escrituras = new ArrayList();
@@ -87,14 +89,20 @@ public class MiRunnable implements Runnable
     {
         try {
             while(running){
-                System.out.println("numero de usuarios antes "+usuarios.size());
-                usuario = servidor.accept();
-                usuarios.add(usuario);
-                System.out.println("numero de usuarios despues "+usuarios.size());
+                System.out.println("numero de usuarios antes "+sockets.size());
+                socket = servidor.accept();
+                sockets.add(socket);
+                System.out.println("numero de usuarios despues "+sockets.size());
                 System.out.println ("Se conecto el cliente #"+(num+1));
-                entrada = new BufferedReader(new InputStreamReader(((Socket)usuarios.get(num)).getInputStream()));
-                salida = new DataOutputStream(((Socket)usuarios.get(num)).getOutputStream());
+                salida = new DataOutputStream(socket.getOutputStream());
                 salida.writeUTF(""+num);
+                System.out.println("hola");
+                try {
+                    entrada = new ObjectInputStream(socket.getInputStream());
+                    System.out.println(entrada.readObject());
+                } catch (ClassNotFoundException ex) {
+                    System.out.println("falla leer nick");
+                }
                 entradas.add(entrada);
                 salidas.add(salida);
 
@@ -136,18 +144,19 @@ public class Escritura implements Runnable
             
             while(running){
                 System.out.println("asd");
-                mensajeRecibido = ((BufferedReader)entradas.get(n)).readLine();
-                
+                entrada = new ObjectInputStream(sockets.get(n).getInputStream());
+                mensajeRecibido = (String) (entradas.get(n)).readObject();
+                System.out.println(mensajeRecibido);
                 //el comando mandado para eliminar a un usuario de la lista
-                if(mensajeRecibido.length()>=17)
-                    if(mensajeRecibido.substring(7, 17).equals("$$cerrar$$")){
+                if(mensajeRecibido.length()>=10)
+                    if(mensajeRecibido.substring(0, 10).equals("$$cerrar$$")){
                         System.out.println(n);
                         entradas.remove(n);
                         salidas.remove(n);
                         ((Escritura)escrituras.get(n)).detener();
                         escrituras.remove(n);
-                        ((Socket)usuarios.get(n)).close();
-                        usuarios.remove(n);
+                        ((Socket)sockets.get(n)).close();
+                        sockets.remove(n);
                         num--;
                         mensajeRecibido = mensajeRecibido.substring(17)+" ha abandonado la conversacion.</font>";
                         System.out.println(mensajeRecibido);
@@ -169,6 +178,8 @@ public class Escritura implements Runnable
             }
         } catch (IOException ex) {
             System.out.println("error envio de mensaje a todos los usuarios");
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         } 
     }
     
