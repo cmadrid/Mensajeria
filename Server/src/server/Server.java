@@ -123,11 +123,15 @@ public class Server extends javax.swing.JFrame {
 
         if (encender.getText().equals("Encender Servidor")) {
             serv = new Servidor();
-            serv.initServer();
-            estado.setText("ON");
-            estado.setForeground(new java.awt.Color(0, 255, 0));
-            encender.setText("Apagar Servidor");
-            reiniciar.setEnabled(true);
+            Boolean inicio =serv.initServer();
+            if(inicio==true){
+                estado.setText("ON");
+                estado.setForeground(new java.awt.Color(0, 255, 0));
+                encender.setText("Apagar Servidor");
+                reiniciar.setEnabled(true);
+            }else{
+                JOptionPane.showMessageDialog(este, "El puerto se encuentra ocupado.");
+            }
         } else {
             serv.terminar();
             estado.setText("OFF");

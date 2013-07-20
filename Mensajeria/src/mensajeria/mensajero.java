@@ -76,8 +76,10 @@ public class mensajero extends javax.swing.JFrame {
                 boolean p=true;
                 while(p){
                     NICK = JOptionPane.showInputDialog(this,"Ingrese su nick",JOptionPane.QUESTION_MESSAGE);
-                    if(usuarios.size()==0)
+                    if(usuarios.size()==0&&NICK!=null)
                         p=false;
+                    if(usuarios.size()==0&&NICK==null)
+                        JOptionPane.showMessageDialog(este, "Ingrese un Nick");
                     for(int i =0;i<usuarios.size();i++){
                         if(((String)usuarios.get(i)).equalsIgnoreCase(NICK))
                             JOptionPane.showMessageDialog(este, "Usuario ya en uso, intente con otro");
@@ -383,7 +385,7 @@ System.out.println("ya estas avisado");
             nick="";
         paquete.add(comando);
         paquete.add(cuerpo);
-        paquete.add(null);
+        paquete.add(this.usuarios);
         paquete.add(nick);
     }
     

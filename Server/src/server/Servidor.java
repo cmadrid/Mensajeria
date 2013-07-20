@@ -38,13 +38,15 @@ public class Servidor {
     MiRunnable probando;
     
     int intentos=0 ;
-    public void initServer(){
+    public boolean initServer(){
+            boolean inicio = true;
         try {
             servidor = new ServerSocket(PUERTO);
             System.out.println("Esperando una conexión");
             probando =new MiRunnable();
             Thread hilo = new Thread(probando);
             hilo.start();
+            inicio=true;
 
             
         } catch (IOException ex) {
@@ -52,14 +54,16 @@ public class Servidor {
                 intentos++;
                 System.out.println("error inicio hilo servidor");
                 initServer();
+                inicio=false;
             }else
                 System.out.println("Sistema ocupado");
         } 
+        return inicio;
  
     
     }
     
-    public void armarPaquete(String comando,String cuerpo,String nick){
+    public void armarPaquete(String comando,String cuerpo,int conversacion,String nick){
         paquete = new ArrayList();
         if(comando==null)
             comando="";
@@ -83,7 +87,7 @@ public class Servidor {
             System.out.println(escrituras.size());
             
             for(int i=0;i<escrituras.size();i++){
-                armarPaquete("OFF", null, null);
+                armarPaquete("OFF", null,0, null);
                 new ObjectOutputStream(sockets.get(i).getOutputStream()).writeObject(paquete);
                 ((Escritura)escrituras.get(i)).detener();
             }
