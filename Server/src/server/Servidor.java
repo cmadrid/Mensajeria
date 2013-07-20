@@ -96,13 +96,18 @@ public class MiRunnable implements Runnable
                 System.out.println ("Se conecto el cliente #"+(num+1));
                 salida = new DataOutputStream(socket.getOutputStream());
                 salida.writeUTF(""+num);
-                System.out.println("hola");
                 try {
                     entrada = new ObjectInputStream(socket.getInputStream());
-                    System.out.println(entrada.readObject());
+                    usuarios.add(entrada.readObject());
                 } catch (ClassNotFoundException ex) {
                     System.out.println("falla leer nick");
                 }
+                //envio de lista de conectados a todos
+                for(int i = 0; i<=num+1;i++)
+                    new ObjectOutputStream(socket.getOutputStream()).writeObject(usuarios);
+                
+                
+                System.out.println(usuarios);
                 entradas.add(entrada);
                 salidas.add(salida);
 
@@ -153,6 +158,7 @@ public class Escritura implements Runnable
                         System.out.println(n);
                         entradas.remove(n);
                         salidas.remove(n);
+                        usuarios.remove(n);
                         ((Escritura)escrituras.get(n)).detener();
                         escrituras.remove(n);
                         ((Socket)sockets.get(n)).close();

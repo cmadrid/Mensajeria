@@ -11,9 +11,11 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -39,7 +41,8 @@ public class mensajero extends javax.swing.JFrame {
     int id;
     JFrame este = this;
     String mensajes="";
-   
+    ArrayList paquete = new ArrayList();
+            
     public mensajero() {
         initComponents();
         
@@ -74,8 +77,9 @@ public class mensajero extends javax.swing.JFrame {
                 vueltas=6;
                 System.out.println("2");
                 id = Integer.parseInt((new DataInputStream((mens.getInputStream()))).readUTF());
-                new ObjectOutputStream(mens.getOutputStream()).writeObject(NICK+"\n");
-                new ObjectOutputStream(mens.getOutputStream()).writeObject(NICK+"\n");
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(NICK);
+                ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
+                System.out.println(entrada.readObject());
                 Thread llega = new Thread(llegada);
                 llega.start();
             } catch (Exception e) {
@@ -92,7 +96,7 @@ public class mensajero extends javax.swing.JFrame {
         if ( eleccion == 0) {
             JOptionPane.showMessageDialog(este, "saliendo del sistema...");
             try {
-                new ObjectOutputStream(mens.getOutputStream()).writeObject("$$cerrar$$"+"$$$$$$$$$$$$$$$$$$$$<font color=\"#CC66CC\">"+NICK+"\n");
+                new ObjectOutputStream(mens.getOutputStream()).writeObject("$$cerrar$$"+"$$$$$$$$$$$$$$$$$$$$<font color=\"#CC66CC\">"+NICK);
                 System.out.println("paso la prueba");
             } catch (IOException ex) {
                 System.out.println("no se envio el cerrar");
@@ -260,7 +264,7 @@ System.out.println("ya estas avisado");
                 try {
 
                 ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
-                mensaje.writeObject("$$$$$$$$$$$$$"+"<font color=\"red\">"+NICK+": </font>"+msj.getText()+"\n");
+                mensaje.writeObject("$$$$$$$$$$$$$"+"<font color=\"red\">"+NICK+": </font>"+msj.getText());
 //                    System.out.println(editor.getText()+"asd ");
 //                editor.setText(editor.getText()+
 //
