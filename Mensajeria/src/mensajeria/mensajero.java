@@ -96,7 +96,9 @@ public class mensajero extends javax.swing.JFrame {
         if ( eleccion == 0) {
             JOptionPane.showMessageDialog(este, "saliendo del sistema...");
             try {
-                new ObjectOutputStream(mens.getOutputStream()).writeObject("$$cerrar$$"+"$$$$$$$$$$$$$$$$$$$$<font color=\"#CC66CC\">"+NICK);
+                armaPaquete("CERRAR", null, NICK);
+                //new ObjectOutputStream(mens.getOutputStream()).writeObject("$$cerrar$$"+"$$$$$$$$$$$$$$$$$$$$<font color=\"#CC66CC\">"+NICK);
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
                 System.out.println("paso la prueba");
             } catch (IOException ex) {
                 System.out.println("no se envio el cerrar");
@@ -127,35 +129,43 @@ System.out.println("ya estas avisado");
         public void run() {
             try {
                while(running){
-                int pos=0;
-                DataInputStream entra = new DataInputStream((mens.getInputStream()));
-                String mens = entra.readUTF();
-                String men = mens.substring(13);
-                if(mens.subSequence(13, 20).equals("$$OFF$$"))
+                //DataInputStream entra = new DataInputStream((mens.getInputStream()));
+                //String mens = entra.readUTF();
+                ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
+                paquete =new ArrayList();
+                paquete = (ArrayList) entrada.readObject();
+                //String men = mens.substring(13);
+                if(paquete.get(0).equals("OFF"))
                        cerrando();
-                pos=19;
-                for(int h=19;h<men.length();h++)
-                    if(men.charAt(h)==':'){
-                        pos=h;
-                        h=999;
-                    }
-                   if(men.substring(18, pos).equals(NICK))
-                       men="<font color=\"red\">Yo</font>"+men.substring(pos);
+                
+                
+                   if(paquete.get(3).equals(NICK)){
+                       paquete.remove(3);
+                       paquete.add("Yo");
+                   }
                    
                    /** seccion emoticones **/
                    
+                String men = (String) paquete.get(1);
 
                 men = men.replace(":D", "<img src='"+new File("emoti/feliz.gif").toURL().toExternalForm()+"' width=15 height=15></img>");
                 men = men.replace(":S", "<img src='"+new File("emoti/ss.png").toURL().toExternalForm()+"' width=15 height=15></img>");
                 men = men.replace(":PALM:", "<img src='"+new File("emoti/palm.png").toURL().toExternalForm()+"' width=15 height=15></img>");
                 men = men.replace(":EVIL:", "<img src='"+new File("emoti/evil.png").toURL().toExternalForm()+"' width=15 height=15></img>");
                 men = men.replace("(Y)", "<img src='"+new File("emoti/Me gusta.jpg").toURL().toExternalForm()+"' width=15 height=15></img>");
+                paquete.remove(1);
+                paquete.add(1, men);
                 //<img src='' width=15 height=15></img>
                 
                 
                 /**Seccion Emoticones fin**/
                 
-                mensajes = mensajes+men+"<br>";
+                if(paquete.get(0).equals("CERRAR")){
+                    System.out.println("cerrar");
+                    mensajes = mensajes+"<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>"+"<br>";}
+                else
+                    mensajes = mensajes+"<font color=\"red\">"+paquete.get(3)+": </font>"+paquete.get(1)+"<br>";
+                   System.out.println(mensajes);
                 editor.setText(mensajes);
                 //mantener el scroll abajo
                 int x;
@@ -262,9 +272,12 @@ System.out.println("ya estas avisado");
         { 
             if(!msj.getText().equalsIgnoreCase("")){
                 try {
-
-                ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
-                mensaje.writeObject("$$$$$$$$$$$$$"+"<font color=\"red\">"+NICK+": </font>"+msj.getText());
+                    
+                    armaPaquete(null, msj.getText(), NICK);
+                    ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
+                    //mensaje.writeObject("$$$$$$$$$$$$$"+"<font color=\"red\">"+NICK+": </font>"+msj.getText());
+                    mensaje.writeObject(paquete);
+                    System.out.println(paquete);
 //                    System.out.println(editor.getText()+"asd ");
 //                editor.setText(editor.getText()+
 //
@@ -278,6 +291,23 @@ System.out.println("ya estas avisado");
         // TODO add your handling code here:
     }//GEN-LAST:event_msjKeyPressed
 
+    public void armaPaquete(String comando,String cuerpo, String nick){
+    
+        paquete = new ArrayList();
+        if(comando==null)
+            comando="";
+        if(cuerpo==null)
+            cuerpo="";
+        if(nick==null)
+            nick="";
+        paquete.add(comando);
+        paquete.add(cuerpo);
+        paquete.add(null);
+        paquete.add(nick);
+    }
+    
+    
+    
     /**
      * @param args the command line arguments
      */

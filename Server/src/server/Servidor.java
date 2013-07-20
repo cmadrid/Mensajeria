@@ -33,6 +33,7 @@ public class Servidor {
     ArrayList<ObjectInputStream> entradas = new ArrayList<ObjectInputStream>();
     ArrayList salidas = new ArrayList();
     ArrayList escrituras = new ArrayList();
+    ArrayList paquete = new ArrayList();
     int num = 0;
     MiRunnable probando;
     
@@ -58,6 +59,20 @@ public class Servidor {
     
     }
     
+    public void armarPaquete(String comando,String cuerpo,String nick){
+        paquete = new ArrayList();
+        if(comando==null)
+            comando="";
+        if(cuerpo==null)
+            cuerpo="";
+        if(nick==null)
+            nick="";
+        paquete.add(comando);
+        paquete.add(cuerpo);
+        paquete.add(this.usuarios);
+        paquete.add(nick);
+    }
+    
     public void terminar(){
         try {
             servidor.close();
@@ -66,8 +81,11 @@ public class Servidor {
             System.out.println(entradas.size());
             System.out.println(salidas.size());
             System.out.println(escrituras.size());
+            
             for(int i=0;i<escrituras.size();i++){
-                ((DataOutputStream)salidas.get(i)).writeUTF("$$$$$$$$$$$$$$$OFF$$El servidor ha sido cerrado.");
+                armarPaquete("OFF", null, null);
+                //((DataOutputStream)salidas.get(i)).writeUTF("$$$$$$$$$$$$$$$OFF$$El servidor ha sido cerrado.");
+                new ObjectOutputStream(sockets.get(i).getOutputStream()).writeObject(paquete);
                 ((Escritura)escrituras.get(i)).detener();
             }
             sockets = new ArrayList();
@@ -149,37 +167,47 @@ public class Escritura implements Runnable
             
             while(running){
                 System.out.println("asd");
+                paquete =new ArrayList();
                 entrada = new ObjectInputStream(sockets.get(n).getInputStream());
-                mensajeRecibido = (String) (entradas.get(n)).readObject();
-                System.out.println(mensajeRecibido);
+                //mensajeRecibido = (String) (entradas.get(n)).readObject();
+                paquete =(ArrayList) (entradas.get(n)).readObject();
+                System.out.println("paquete recibe 1");
+                System.out.println(paquete);
+                System.out.println("paquete recibe 2");
                 //el comando mandado para eliminar a un usuario de la lista
-                if(mensajeRecibido.length()>=10)
-                    if(mensajeRecibido.substring(0, 10).equals("$$cerrar$$")){
-                        System.out.println(n);
-                        entradas.remove(n);
-                        salidas.remove(n);
-                        usuarios.remove(n);
-                        ((Escritura)escrituras.get(n)).detener();
-                        escrituras.remove(n);
-                        ((Socket)sockets.get(n)).close();
-                        sockets.remove(n);
-                        num--;
-                        mensajeRecibido = mensajeRecibido.substring(17)+" ha abandonado la conversacion.</font>";
-                        System.out.println(mensajeRecibido);
-                        
-                        int j = entradas.size();
-                        for(int i = n; i<j;i++)
-                            ((Escritura)escrituras.get(i)).reducen();
+                mensajeRecibido="<font color=\"#CC66CC\">"+paquete.get(3)+": </font>"+paquete.get(1);
+                
+                
+                if(paquete.get(0).equals("cerrar")){
+                    System.out.println(n);
+                    entradas.remove(n);
+                    salidas.remove(n);
+                    usuarios.remove(n);
+                    ((Escritura)escrituras.get(n)).detener();
+                    escrituras.remove(n);
+                    ((Socket)sockets.get(n)).close();
+                    sockets.remove(n);
+                    num--;
+                    mensajeRecibido = "<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>";
+                    //System.out.println(mensajeRecibido);
+
+                    int j = entradas.size();
+                    for(int i = n; i<j;i++)
+                        ((Escritura)escrituras.get(i)).reducen();
 //                        for(int i = n; i<j;i++)
 //                            entradas.add(new BufferedReader(new InputStreamReader(((Socket)usuarios.get(n)).getInputStream())));
-                            }
+                        }
                 
-                System.out.println(mensajeRecibido+" enviado desde el cliente #"+n);
-                System.out.println(mensajeRecibido);
+                //System.out.println(mensajeRecibido+" enviado desde el cliente #"+n);
+                //System.out.println(mensajeRecibido);
                 //envio mensaje de vuelta a los chats
-                System.out.println("numero de salidas "+salidas.size());
+                //System.out.println("numero de salidas "+salidas.size());
+                System.out.println("inicia la muestra");
+                System.out.println(paquete);
+                System.out.println("acaba la muestra");
                 for(int j = 0;j<salidas.size();j++){
-                    ((DataOutputStream)salidas.get(j)).writeUTF(mensajeRecibido);
+                    //((DataOutputStream)salidas.get(j)).writeUTF(mensajeRecibido);
+                    new ObjectOutputStream(sockets.get(j).getOutputStream()).writeObject(paquete);
                 }
             }
         } catch (IOException ex) {
