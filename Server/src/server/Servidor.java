@@ -84,7 +84,6 @@ public class Servidor {
             
             for(int i=0;i<escrituras.size();i++){
                 armarPaquete("OFF", null, null);
-                //((DataOutputStream)salidas.get(i)).writeUTF("$$$$$$$$$$$$$$$OFF$$El servidor ha sido cerrado.");
                 new ObjectOutputStream(sockets.get(i).getOutputStream()).writeObject(paquete);
                 ((Escritura)escrituras.get(i)).detener();
             }
@@ -110,6 +109,9 @@ public class MiRunnable implements Runnable
                 System.out.println("numero de usuarios antes "+sockets.size());
                 socket = servidor.accept();
                 sockets.add(socket);
+                
+                new ObjectOutputStream(socket.getOutputStream()).writeObject(usuarios);
+                
                 System.out.println("numero de usuarios despues "+sockets.size());
                 System.out.println ("Se conecto el cliente #"+(num+1));
                 salida = new DataOutputStream(socket.getOutputStream());
@@ -121,8 +123,8 @@ public class MiRunnable implements Runnable
                     System.out.println("falla leer nick");
                 }
                 //envio de lista de conectados a todos
-                for(int i = 0; i<=num+1;i++)
-                    new ObjectOutputStream(socket.getOutputStream()).writeObject(usuarios);
+                //for(int i = 0; i<=num+1;i++)
+                new ObjectOutputStream(socket.getOutputStream()).writeObject(usuarios);
                 
                 
                 System.out.println(usuarios);
@@ -169,16 +171,16 @@ public class Escritura implements Runnable
                 System.out.println("asd");
                 paquete =new ArrayList();
                 entrada = new ObjectInputStream(sockets.get(n).getInputStream());
-                //mensajeRecibido = (String) (entradas.get(n)).readObject();
                 paquete =(ArrayList) (entradas.get(n)).readObject();
                 System.out.println("paquete recibe 1");
                 System.out.println(paquete);
                 System.out.println("paquete recibe 2");
+                
                 //el comando mandado para eliminar a un usuario de la lista
                 mensajeRecibido="<font color=\"#CC66CC\">"+paquete.get(3)+": </font>"+paquete.get(1);
                 
                 
-                if(paquete.get(0).equals("cerrar")){
+                if(paquete.get(0).equals("CERRAR")){
                     System.out.println(n);
                     entradas.remove(n);
                     salidas.remove(n);
@@ -189,24 +191,19 @@ public class Escritura implements Runnable
                     sockets.remove(n);
                     num--;
                     mensajeRecibido = "<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>";
-                    //System.out.println(mensajeRecibido);
 
                     int j = entradas.size();
                     for(int i = n; i<j;i++)
                         ((Escritura)escrituras.get(i)).reducen();
-//                        for(int i = n; i<j;i++)
-//                            entradas.add(new BufferedReader(new InputStreamReader(((Socket)usuarios.get(n)).getInputStream())));
                         }
-                
-                //System.out.println(mensajeRecibido+" enviado desde el cliente #"+n);
-                //System.out.println(mensajeRecibido);
-                //envio mensaje de vuelta a los chats
-                //System.out.println("numero de salidas "+salidas.size());
+                //System.out.println(usuarios+" es la lista de usuarios guardados");
+                paquete.remove(2);
+                paquete.add(2,usuarios);
                 System.out.println("inicia la muestra");
                 System.out.println(paquete);
                 System.out.println("acaba la muestra");
                 for(int j = 0;j<salidas.size();j++){
-                    //((DataOutputStream)salidas.get(j)).writeUTF(mensajeRecibido);
+                    
                     new ObjectOutputStream(sockets.get(j).getOutputStream()).writeObject(paquete);
                 }
             }

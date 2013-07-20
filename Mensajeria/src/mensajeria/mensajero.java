@@ -22,6 +22,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.ListModel;
 import javax.swing.WindowConstants;
 import javax.swing.text.StyledEditorKit;
 
@@ -37,33 +38,21 @@ public class mensajero extends javax.swing.JFrame {
     int PUERTO = 5000;
     String DIR = "10.0.0.17";
     Socket mens;
-    String NICK;
+    String NICK="";
     int id;
     JFrame este = this;
     String mensajes="";
     ArrayList paquete = new ArrayList();
+    ArrayList usuarios = new ArrayList();
             
     public mensajero() {
         initComponents();
-        
-        DefaultListModel modelo = new DefaultListModel();
-
-        for(int i = 1; i<=10; i++){
-                modelo.addElement("hola"+i);
-        }
-
-        Usuarios.setModel(modelo);
         
         
         editor.setContentType("text/html");
         editor.setEditable(false);
         //editor.setEnabled(false);
         DIR = JOptionPane.showInputDialog(this,"Indique el servidor a conectarse",JOptionPane.QUESTION_MESSAGE);
-        NICK = JOptionPane.showInputDialog(this,"Ingrese su nick",JOptionPane.QUESTION_MESSAGE);
-        if(NICK==null)
-            NICK="UsuarioAnónimo";
-        System.out.println(NICK);
-        setTitle(NICK+" - Aplicacion de Mensajeria");
         
         final Llegada llegada = new Llegada();
 
@@ -76,10 +65,60 @@ public class mensajero extends javax.swing.JFrame {
                 System.out.println();
                 vueltas=6;
                 System.out.println("2");
+                
+                
+                
+                //Pidiendo y validando nick sin repetirse
+                
+                ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
+                usuarios = (ArrayList) entrada.readObject();
+                
+                boolean p=true;
+                while(p){
+                    NICK = JOptionPane.showInputDialog(this,"Ingrese su nick",JOptionPane.QUESTION_MESSAGE);
+                    if(usuarios.size()==0)
+                        p=false;
+                    for(int i =0;i<usuarios.size();i++){
+                        if(((String)usuarios.get(i)).equalsIgnoreCase(NICK))
+                            JOptionPane.showMessageDialog(este, "Usuario ya en uso, intente con otro");
+                        else{
+                            
+                            if(NICK==null||NICK.equals(mensajes))
+                                JOptionPane.showMessageDialog(este, "Ingrese un Nick");
+                            else
+                                p=false; 
+                        }
+                    }
+                }
+                if(NICK==null)
+                    NICK="UsuarioAnónimo";
+                System.out.println(NICK);
+                setTitle(NICK+" - Aplicacion de Mensajeria");
+                
+                
+                
+                
+                
+                
+                
                 id = Integer.parseInt((new DataInputStream((mens.getInputStream()))).readUTF());
                 new ObjectOutputStream(mens.getOutputStream()).writeObject(NICK);
-                ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
-                System.out.println(entrada.readObject());
+                entrada = new ObjectInputStream(mens.getInputStream());
+                usuarios = new ArrayList();
+                usuarios = (ArrayList) entrada.readObject();
+                //llenando la lista con los usuarios
+                DefaultListModel modelo = new DefaultListModel();
+                for(int i = 0; i<usuarios.size(); i++){
+                    modelo.addElement(usuarios.get(i));
+                }
+                Usuarios.setModel(modelo);
+                armaPaquete("ENTRAR", null, NICK);
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                
+                
+                
+                
+                
                 Thread llega = new Thread(llegada);
                 llega.start();
             } catch (Exception e) {
@@ -97,13 +136,13 @@ public class mensajero extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(este, "saliendo del sistema...");
             try {
                 armaPaquete("CERRAR", null, NICK);
-                //new ObjectOutputStream(mens.getOutputStream()).writeObject("$$cerrar$$"+"$$$$$$$$$$$$$$$$$$$$<font color=\"#CC66CC\">"+NICK);
+                
                 new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
                 System.out.println("paso la prueba");
             } catch (IOException ex) {
                 System.out.println("no se envio el cerrar");
             }
-//            
+           
             llegada.detener();
             System.exit(0);
         }   
@@ -129,14 +168,29 @@ System.out.println("ya estas avisado");
         public void run() {
             try {
                while(running){
-                //DataInputStream entra = new DataInputStream((mens.getInputStream()));
-                //String mens = entra.readUTF();
+                   
                 ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
                 paquete =new ArrayList();
                 paquete = (ArrayList) entrada.readObject();
+                   System.out.println(paquete+" completo ");
+                System.out.println(paquete.get(2)+" lista actual de usuarios");
+                
+                //agregando los usuarios a la lista
+                usuarios = new ArrayList();
+                usuarios = (ArrayList) paquete.get(2);
+                DefaultListModel modelo = new DefaultListModel();
+                for(int i = 0; i<usuarios.size(); i++){
+                    modelo.addElement(usuarios.get(i));
+                }
+                Usuarios.setModel(modelo);
+                
+                
+                
+                
                 //String men = mens.substring(13);
                 if(paquete.get(0).equals("OFF"))
                        cerrando();
+                
                 
                 
                    if(paquete.get(3).equals(NICK)){
@@ -158,15 +212,29 @@ System.out.println("ya estas avisado");
                 //<img src='' width=15 height=15></img>
                 
                 
+                
+                
+                
                 /**Seccion Emoticones fin**/
                 
-                if(paquete.get(0).equals("CERRAR")){
-                    System.out.println("cerrar");
-                    mensajes = mensajes+"<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>"+"<br>";}
-                else
+                //instrucciones segun comandos
+                if(!paquete.get(0).equals("CERRAR") && !paquete.get(0).equals("ENTRAR"))
                     mensajes = mensajes+"<font color=\"red\">"+paquete.get(3)+": </font>"+paquete.get(1)+"<br>";
-                   System.out.println(mensajes);
+                else
+                    if(paquete.get(0).equals("CERRAR"))
+                        mensajes = mensajes+"<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>"+"<br>";
+                    else
+                        if(paquete.get(0).equals("ENTRAR") && !paquete.get(3).equals("Yo"))
+                            mensajes = mensajes+"<font color=\"#009933\">"+paquete.get(3)+" ha ingresado la conversacion.</font>"+"<br>";
+                        else
+                            if(paquete.get(0).equals("ENTRAR") && paquete.get(3).equals("Yo"))
+                                mensajes=mensajes;
+                            
+                
+                
                 editor.setText(mensajes);
+                
+                
                 //mantener el scroll abajo
                 int x;
                 editor.selectAll();
@@ -217,6 +285,11 @@ System.out.println("ya estas avisado");
 
         jScrollPane2.setViewportView(editor);
 
+        Usuarios.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                UsuariosMouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(Usuarios);
 
         jLabel2.setText("Usuarios Conectados");
@@ -275,13 +348,9 @@ System.out.println("ya estas avisado");
                     
                     armaPaquete(null, msj.getText(), NICK);
                     ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
-                    //mensaje.writeObject("$$$$$$$$$$$$$"+"<font color=\"red\">"+NICK+": </font>"+msj.getText());
                     mensaje.writeObject(paquete);
                     System.out.println(paquete);
-//                    System.out.println(editor.getText()+"asd ");
-//                editor.setText(editor.getText()+
-//
-//"<font color=\"red\">"+NICK+": </font>"+msj.getText());
+                    
                 msj.setText(null);
                 } catch (Exception e) {
                 }
@@ -290,6 +359,18 @@ System.out.println("ya estas avisado");
     
         // TODO add your handling code here:
     }//GEN-LAST:event_msjKeyPressed
+
+    private void UsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_UsuariosMouseClicked
+
+    if(evt.getClickCount() == 2){
+    int index = Usuarios.locationToIndex(evt.getPoint());
+    ListModel dlm = Usuarios.getModel();
+    Object item = dlm.getElementAt(index);
+    Usuarios.ensureIndexIsVisible(index);
+    JOptionPane.showMessageDialog(este, "Chat privado no disponible en version de prueba...");
+    }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_UsuariosMouseClicked
 
     public void armaPaquete(String comando,String cuerpo, String nick){
     

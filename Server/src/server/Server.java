@@ -4,6 +4,13 @@
  */
 package server;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 /**
  *
  * @author Cesar Madrid
@@ -11,12 +18,31 @@ package server;
 public class Server extends javax.swing.JFrame {
 
     Servidor serv;
+    JFrame este = this;
 
     /**
      * Creates new form Server
      */
     public Server() {
         initComponents();
+        
+        addWindowListener(new WindowAdapter(){
+        public void windowClosing(WindowEvent we){
+        int eleccion = JOptionPane.showConfirmDialog(este, "Desea salir?");
+        if ( eleccion == 0) {
+            JOptionPane.showMessageDialog(este, "saliendo del sistema...");
+              
+                serv.terminar();
+            
+           
+            System.exit(0);
+        }   
+    }
+});
+        
+        
+        
+        
     }
 
     /**
@@ -51,6 +77,7 @@ public class Server extends javax.swing.JFrame {
         });
 
         reiniciar.setText("Reiniciar Servidor");
+        reiniciar.setEnabled(false);
         reiniciar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 reiniciarActionPerformed(evt);
@@ -100,11 +127,13 @@ public class Server extends javax.swing.JFrame {
             estado.setText("ON");
             estado.setForeground(new java.awt.Color(0, 255, 0));
             encender.setText("Apagar Servidor");
+            reiniciar.setEnabled(true);
         } else {
             serv.terminar();
             estado.setText("OFF");
             estado.setForeground(new java.awt.Color(255, 0, 0));
             encender.setText("Encender Servidor");
+            reiniciar.setEnabled(false);
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_encenderActionPerformed
