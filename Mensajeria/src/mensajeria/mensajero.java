@@ -18,6 +18,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -31,7 +33,7 @@ import javax.swing.text.StyledEditorKit;
  * @author Cesar Madrid
  */
 public class mensajero extends javax.swing.JFrame {
-
+    
     /**
      * Creates new form mensajero
      */
@@ -115,6 +117,8 @@ public class mensajero extends javax.swing.JFrame {
                 }
                 Usuarios.setModel(modelo);
                 armaPaquete("ENTRAR", null, NICK);
+                System.out.println("este es el ");
+                System.out.println("paquete de arranque a mandar"+ paquete);
                 new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
                 
                 
@@ -174,7 +178,14 @@ System.out.println("ya estas avisado");
                 ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
                 paquete =new ArrayList();
                 paquete = (ArrayList) entrada.readObject();
-                   System.out.println(paquete+" completo ");
+                
+                //creando sonido de alerta
+                Clip sonido = AudioSystem.getClip();
+                sonido.open(AudioSystem.getAudioInputStream(new File("sonidos/MSN alert.wav")));
+                //sonido.start();
+                
+                        
+//                   System.out.println(paquete+" completo ");
                 System.out.println(paquete.get(2)+" lista actual de usuarios");
                 
                 //agregando los usuarios a la lista
@@ -220,8 +231,10 @@ System.out.println("ya estas avisado");
                 /**Seccion Emoticones fin**/
                 
                 //instrucciones segun comandos
-                if(!paquete.get(0).equals("CERRAR") && !paquete.get(0).equals("ENTRAR"))
+                if(!paquete.get(0).equals("CERRAR") && !paquete.get(0).equals("ENTRAR")){
                     mensajes = mensajes+"<font color=\"red\">"+paquete.get(3)+": </font>"+paquete.get(1)+"<br>";
+                    if(!paquete.get(3).equals("Yo"))sonido.start();//reproduce el audio.
+                }
                 else
                     if(paquete.get(0).equals("CERRAR"))
                         mensajes = mensajes+"<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>"+"<br>";
