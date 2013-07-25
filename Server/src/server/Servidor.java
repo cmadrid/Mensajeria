@@ -174,8 +174,9 @@ public class Escritura implements Runnable
             while(running){
                 System.out.println("asd");
                 paquete =new ArrayList();
-                entrada = new ObjectInputStream(sockets.get(n).getInputStream());
-                paquete =(ArrayList) (entradas.get(n)).readObject();
+                paquete = (ArrayList) new ObjectInputStream(sockets.get(n).getInputStream()).readObject();
+                System.out.println("2");
+//                paquete =(ArrayList) ((entradas.get(n)).readObject());
                 System.out.println("paquete recibe 1");
                 System.out.println(paquete);
                 System.out.println("paquete recibe 2");

@@ -4,6 +4,7 @@
  */
 package mensajeria;
 
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -21,6 +24,8 @@ import java.util.logging.Logger;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -46,9 +51,12 @@ public class mensajero extends javax.swing.JFrame {
     String mensajes="";
     ArrayList paquete = new ArrayList();
     ArrayList usuarios = new ArrayList();
+    Zumbido zumba = new Zumbido();
+    Thread zumbido = new Thread(zumba);
             
     public mensajero() {
         initComponents();
+        zumbido.start();
         
         
         editor.setContentType("text/html");
@@ -179,10 +187,41 @@ System.out.println("ya estas avisado");
                 paquete =new ArrayList();
                 paquete = (ArrayList) entrada.readObject();
                 
+                //Ubico directorio dond almaceno mis archivos dentro del .jar
+                String Directorio=getClass().getResource("").toExternalForm();
+                Directorio=(String) Directorio.subSequence(0, Directorio.length()-11);
+                
+                URL zumbidoUrl = new URL(Directorio+"sonidos/nudge.wav");
+                Clip zumb = AudioSystem.getClip();
+                zumb.open(AudioSystem.getAudioInputStream(zumbidoUrl));
+                
+                if(paquete.get(0).equals("ZUMBIDO")){
+                    if(paquete.get(3).equals(NICK))
+                        mensajes=mensajes+"<font color=\"#CCAB23\">Has enviado un zumbido. </font><br>";
+                    else{
+                        mensajes=mensajes+"<font color=\"#CCAB23\">" +paquete.get(3)+" ha enviado un zumbido.</font> <br>";
+                       zumba.zumbar();
+                       este.setVisible(true);
+                       este.setExtendedState(este.NORMAL);
+                        
+                    }
+                    editor.setText(mensajes);
+                       if(!zumb.isActive())
+                            zumb.start();
+                    int x;
+                    editor.selectAll();
+                    x = editor.getSelectionEnd();
+                    editor.select(x,x);
+                    continue;
+                }
+                
                 //creando sonido de alerta
-                Clip sonido = AudioSystem.getClip();
-                sonido.open(AudioSystem.getAudioInputStream(new File("sonidos/MSN alert.wav")));
+                URL alertUrl = new URL(Directorio+"sonidos/MSN alert.wav");
+                Clip alertmsj = AudioSystem.getClip();
+                alertmsj.open(AudioSystem.getAudioInputStream(alertUrl));
                 //sonido.start();
+//                zumba.zumbar();
+                
                 
                         
 //                   System.out.println(paquete+" completo ");
@@ -214,12 +253,17 @@ System.out.println("ya estas avisado");
                    /** seccion emoticones **/
                    
                 String men = (String) paquete.get(1);
-
-                men = men.replace(":D", "<img src='"+new File("emoti/feliz.gif").toURL().toExternalForm()+"' width=15 height=15></img>");
-                men = men.replace(":S", "<img src='"+new File("emoti/ss.png").toURL().toExternalForm()+"' width=15 height=15></img>");
-                men = men.replace(":PALM:", "<img src='"+new File("emoti/palm.png").toURL().toExternalForm()+"' width=15 height=15></img>");
-                men = men.replace(":EVIL:", "<img src='"+new File("emoti/evil.png").toURL().toExternalForm()+"' width=15 height=15></img>");
-                men = men.replace("(Y)", "<img src='"+new File("emoti/Me gusta.jpg").toURL().toExternalForm()+"' width=15 height=15></img>");
+                
+                
+                
+                
+                men = men.replace(":D", "<img src='"+Directorio+"emoti/feliz.gif"+"' width=15 height=15></img>");
+                
+//                   System.out.println(getClass().getResource("emoti/feliz.gif").toExternalForm()+"(Y)");
+                men = men.replace(":S", "<img src='"+Directorio+"emoti/ss.png"+"' width=15 height=15></img>");
+                men = men.replace(":PALM:", "<img src='"+Directorio+"emoti/palm.png"+"' width=15 height=15></img>");
+                men = men.replace(":EVIL:", "<img src='"+Directorio+"emoti/evil.png"+"' width=15 height=15></img>");
+                men = men.replace("(Y)", "<img src='"+Directorio+"emoti/Me gusta.jpg"+"' width=15 height=15></img>");
                 paquete.remove(1);
                 paquete.add(1, men);
                 //<img src='' width=15 height=15></img>
@@ -233,7 +277,8 @@ System.out.println("ya estas avisado");
                 //instrucciones segun comandos
                 if(!paquete.get(0).equals("CERRAR") && !paquete.get(0).equals("ENTRAR")){
                     mensajes = mensajes+"<font color=\"red\">"+paquete.get(3)+": </font>"+paquete.get(1)+"<br>";
-                    if(!paquete.get(3).equals("Yo"))sonido.start();//reproduce el audio.
+                    if(!paquete.get(3).equals("Yo"))alertmsj.start();//reproduce el audio.
+                    este.setVisible(true);
                 }
                 else
                     if(paquete.get(0).equals("CERRAR"))
@@ -287,8 +332,10 @@ System.out.println("ya estas avisado");
         jScrollPane1 = new javax.swing.JScrollPane();
         Usuarios = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setResizable(false);
 
         msj.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -309,28 +356,38 @@ System.out.println("ya estas avisado");
 
         jLabel2.setText("Usuarios Conectados");
 
+        jButton1.setText("Zumbido ((:S))");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGap(142, 142, 142)
+                .addComponent(jLabel1)
+                .addContainerGap(271, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(142, 142, 142)
-                        .addComponent(jLabel1))
+                        .addComponent(jButton1)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(39, 39, 39)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(msj)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(18, 18, 18)
+                                .addGap(8, 8, 8)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jLabel2)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jLabel2))
+                        .addGap(18, 18, 18))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -344,9 +401,11 @@ System.out.println("ya estas avisado");
                         .addComponent(jLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(28, 28, 28)
+                .addGap(18, 18, 18)
+                .addComponent(jButton1)
+                .addGap(4, 4, 4)
                 .addComponent(msj, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(46, 46, 46))
+                .addGap(29, 29, 29))
         );
 
         pack();
@@ -387,6 +446,20 @@ System.out.println("ya estas avisado");
         // TODO add your handling code here:
     }//GEN-LAST:event_UsuariosMouseClicked
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        try {
+
+            armaPaquete("ZUMBIDO", null, NICK);
+            ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
+            mensaje.writeObject(paquete);
+
+        } catch (Exception e) {
+        }
+
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     public void armaPaquete(String comando,String cuerpo, String nick){
     
         paquete = new ArrayList();
@@ -400,6 +473,76 @@ System.out.println("ya estas avisado");
         paquete.add(cuerpo);
         paquete.add(this.usuarios);
         paquete.add(nick);
+    }
+    
+    public class Zumbido implements Runnable{
+        boolean running =true;
+         boolean seguir =false;
+        @Override
+        public void run() {
+            while(running){
+                try {
+                    Thread.sleep(60);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if(seguir){
+                    int x=este.getX();
+                    int y = este.getY();
+                    este.setLocation(x+25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    este.setLocation(x-25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    este.setLocation(x+25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    este.setLocation(x-25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }este.setLocation(x+25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    este.setLocation(x-25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    este.setLocation(x+25, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    este.setLocation(x, y);
+                    try {
+                        Thread.sleep(60);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }seguir=false;
+            }
+            
+        }
+        public void zumbar(){
+            seguir=true;
+        }
     }
     
     
@@ -441,6 +584,7 @@ System.out.println("ya estas avisado");
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList Usuarios;
     private javax.swing.JEditorPane editor;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
