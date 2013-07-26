@@ -19,6 +19,9 @@ import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.AudioSystem;
@@ -53,16 +56,22 @@ public class mensajero extends javax.swing.JFrame {
     ArrayList usuarios = new ArrayList();
     Zumbido zumba = new Zumbido();
     Thread zumbido = new Thread(zumba);
-            
-    public mensajero() {
+    static Map<String, mensajero> chats = new HashMap<>();
+    String TIPO;
+    public mensajero(final String tipo,String dir,String nick) {
+        TIPO=tipo;
         initComponents();
         zumbido.start();
         
-        
         editor.setContentType("text/html");
         editor.setEditable(false);
-        //editor.setEnabled(false);
+        
+        if(tipo.equals("TODOS")){
         DIR = JOptionPane.showInputDialog(this,"Indique el servidor a conectarse",JOptionPane.QUESTION_MESSAGE);
+        }
+        else 
+            DIR=dir;
+        
         
         final Llegada llegada = new Llegada();
 
@@ -72,6 +81,7 @@ public class mensajero extends javax.swing.JFrame {
             try {
                 
                 mens = new Socket(DIR,PUERTO);
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(tipo);
                 System.out.println();
                 vueltas=6;
                 System.out.println("2");
@@ -84,7 +94,7 @@ public class mensajero extends javax.swing.JFrame {
                 usuarios = (ArrayList) entrada.readObject();
                 
                 boolean p=true;
-                while(p){
+                while(p&&tipo.equals("TODOS")){
                     NICK = JOptionPane.showInputDialog(this,"Ingrese su nick",JOptionPane.QUESTION_MESSAGE);
                     if(usuarios.size()==0&&NICK!=null)
                         p=false;
@@ -102,10 +112,18 @@ public class mensajero extends javax.swing.JFrame {
                         }
                     }
                 }
+                if(!tipo.equals("TODOS"))
+                    NICK=nick;
+                
                 if(NICK==null)
                     NICK="UsuarioAnónimo";
                 System.out.println(NICK);
-                setTitle(NICK+" - Aplicacion de Mensajeria");
+                
+                if(tipo.equals("TODOS"))
+                    setTitle(NICK+" - Aplicacion de Mensajeria");
+                else
+                    setTitle(NICK+" - Chat privado - Aplicacion de Mensajeria");
+                    
                 
                 
                 
@@ -124,7 +142,7 @@ public class mensajero extends javax.swing.JFrame {
                     modelo.addElement(usuarios.get(i));
                 }
                 Usuarios.setModel(modelo);
-                armaPaquete("ENTRAR", null, NICK);
+                armaPaquete("ENTRAR", null,usuarios, NICK,TIPO);
                 System.out.println("este es el ");
                 System.out.println("paquete de arranque a mandar"+ paquete);
                 new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
@@ -138,30 +156,41 @@ public class mensajero extends javax.swing.JFrame {
             } catch (Exception e) {
                 vueltas++;
                 JOptionPane.showMessageDialog(this,"El servidor no fue encontrado. Adios");
-                System.exit(0);
+                if(tipo.equals("TODOS"))
+                    System.exit(0);
+                else este.dispose();
 
 
             }
-            
+                if(tipo.equals("TODOS")){
                     addWindowListener(new WindowAdapter(){
-        public void windowClosing(WindowEvent we){
-        int eleccion = JOptionPane.showConfirmDialog(este, "Desea salir?");
-        if ( eleccion == 0) {
-            JOptionPane.showMessageDialog(este, "saliendo del sistema...");
-            try {
-                armaPaquete("CERRAR", null, NICK);
+                        public void windowClosing(WindowEvent we){
+                        int eleccion = JOptionPane.showConfirmDialog(este, "Desea salir?");
+                        if ( eleccion == 0) {
+                            JOptionPane.showMessageDialog(este, "saliendo...");
+                            try {
+                                if(tipo.equals("TODOS"))
+                                    armaPaquete("CERRAR", null,usuarios, NICK,TIPO);
+                                else
+                                    armaPaquete("CERRARP", null,usuarios, NICK,TIPO);
+                                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                                System.out.println("paso la prueba");
+                            } catch (IOException ex) {
+                                System.out.println("no se envio el cerrar");
+                            }
+
+                            
+                            if(tipo.equals("TODOS")){
+                                llegada.detener();
+                                System.exit(0);
+                            }
+                            
+                        }   
+                    }
+                     });
+                }
                 
-                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
-                System.out.println("paso la prueba");
-            } catch (IOException ex) {
-                System.out.println("no se envio el cerrar");
-            }
-           
-            llegada.detener();
-            System.exit(0);
-        }   
-    }
-});
+                
             
             
             
@@ -186,6 +215,14 @@ System.out.println("ya estas avisado");
                 ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
                 paquete =new ArrayList();
                 paquete = (ArrayList) entrada.readObject();
+                   System.out.println("paquete recien llegado :p "+ paquete);
+                   
+                   
+                //comando para mandar a cerrar las ventanas. 
+                if(paquete.get(0).equals("OFF"))
+                       cerrando();
+                   
+                   
                 
                 //Ubico directorio dond almaceno mis archivos dentro del .jar
                 String Directorio=getClass().getResource("").toExternalForm();
@@ -214,6 +251,25 @@ System.out.println("ya estas avisado");
                     editor.select(x,x);
                     continue;
                 }
+                //cuando llamo a una conversacion q ya esta inicializada
+                if(paquete.get(0).equals("MOSTRAR")){
+                    System.out.println(chats);
+                    System.out.println(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1)+" <-1111111111111111111111");
+                    System.out.println(chats.get(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1))+" 222");
+                    chats.get(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1)).show();
+                    continue;
+                }
+                if(paquete.get(0).equals("INIPRI")){
+                    System.out.println("esto son los destinatarios "+paquete.get(4));
+                    mensajero privado = new mensajero((String) paquete.get(4),DIR,NICK);
+                    chats.put((String) paquete.get(4), privado);
+                    System.out.println(paquete.get(4)+"<-----------------1");
+                    System.out.println(chats.get(paquete.get(4)));
+                    System.out.println(chats);
+                    privado.setVisible(true);
+                    continue;
+                }
+                    
                 
                 //creando sonido de alerta
                 URL alertUrl = new URL(Directorio+"sonidos/MSN alert.wav");
@@ -240,14 +296,13 @@ System.out.println("ya estas avisado");
                 
                 
                 //String men = mens.substring(13);
-                if(paquete.get(0).equals("OFF"))
-                       cerrando();
+                
                 
                 
                 
                    if(paquete.get(3).equals(NICK)){
                        paquete.remove(3);
-                       paquete.add("Yo");
+                       paquete.add(3,"Yo");
                    }
                    
                    /** seccion emoticones **/
@@ -275,6 +330,22 @@ System.out.println("ya estas avisado");
                 /**Seccion Emoticones fin**/
                 
                 //instrucciones segun comandos
+                if(paquete.get(0).equals("CERARP")){
+                    Iterator it = chats.keySet().iterator();
+                    while(it.hasNext()){
+                        String key = (String) it.next();
+                        mensajero mensajeross = chats.get(key);
+                        JOptionPane.showConfirmDialog(null,"Ha terminado la conversacion");
+                        mensajeross.dispose();
+                
+                    }
+                }
+                if(paquete.get(0).equals("CERRARP")){
+                    JOptionPane.showConfirmDialog(null, "Secion finalizo");
+                    este.hide();
+                    continue;
+                }
+                
                 if(!paquete.get(0).equals("CERRAR") && !paquete.get(0).equals("ENTRAR")){
                     mensajes = mensajes+"<font color=\"red\">"+paquete.get(3)+": </font>"+paquete.get(1)+"<br>";
                     if(!paquete.get(3).equals("Yo"))alertmsj.start();//reproduce el audio.
@@ -283,6 +354,7 @@ System.out.println("ya estas avisado");
                 else
                     if(paquete.get(0).equals("CERRAR"))
                         mensajes = mensajes+"<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>"+"<br>";
+                    
                     else
                         if(paquete.get(0).equals("ENTRAR") && !paquete.get(3).equals("Yo"))
                             mensajes = mensajes+"<font color=\"#009933\">"+paquete.get(3)+" ha ingresado la conversacion.</font>"+"<br>";
@@ -334,7 +406,6 @@ System.out.println("ya estas avisado");
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setResizable(false);
 
         msj.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -370,7 +441,7 @@ System.out.println("ya estas avisado");
             .addGroup(layout.createSequentialGroup()
                 .addGap(142, 142, 142)
                 .addComponent(jLabel1)
-                .addContainerGap(271, Short.MAX_VALUE))
+                .addContainerGap(252, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -420,7 +491,7 @@ System.out.println("ya estas avisado");
             if(!msj.getText().equalsIgnoreCase("")){
                 try {
                     
-                    armaPaquete(null, msj.getText(), NICK);
+                    armaPaquete(null, msj.getText(),usuarios, NICK,TIPO);
                     ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
                     mensaje.writeObject(paquete);
                     System.out.println(paquete);
@@ -437,11 +508,34 @@ System.out.println("ya estas avisado");
     private void UsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_UsuariosMouseClicked
 
     if(evt.getClickCount() == 2){
-    int index = Usuarios.locationToIndex(evt.getPoint());
-    ListModel dlm = Usuarios.getModel();
-    Object item = dlm.getElementAt(index);
-    Usuarios.ensureIndexIsVisible(index);
-    JOptionPane.showMessageDialog(este, "Chat privado no disponible en version de prueba...");
+        int index = Usuarios.locationToIndex(evt.getPoint());
+        ListModel dlm = Usuarios.getModel();
+        Object item = dlm.getElementAt(index);
+        System.out.println(item.toString()+" y "+NICK);
+        ArrayList participantes = new ArrayList();
+        
+        for(int i = 0  ; i < usuarios.size() ; i++)
+            if(usuarios.get(i).equals(item.toString())||usuarios.get(i).equals(NICK))
+                participantes.add(usuarios.get(i));
+        
+        if(chats.containsKey(participantes.get(0)+" "+participantes.get(1))){
+            armaPaquete("MOSTRAR", null, participantes, NICK, participantes.get(0)+" "+participantes.get(1));
+           
+        }else
+        
+        
+        if(!item.equals(NICK)){
+            
+            Usuarios.ensureIndexIsVisible(index);
+            armaPaquete("INIPRI", null,participantes, NICK,participantes.get(0)+" "+participantes.get(1));
+           
+
+        JOptionPane.showMessageDialog(este, "Chat privado no disponible en version de prueba...");
+        }
+         try {
+                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+            } catch (Exception e) {
+            }
     }
         // TODO add your handling code here:
     }//GEN-LAST:event_UsuariosMouseClicked
@@ -450,7 +544,7 @@ System.out.println("ya estas avisado");
 
         try {
 
-            armaPaquete("ZUMBIDO", null, NICK);
+            armaPaquete("ZUMBIDO", null,usuarios, NICK,TIPO);
             ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
             mensaje.writeObject(paquete);
 
@@ -460,7 +554,7 @@ System.out.println("ya estas avisado");
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    public void armaPaquete(String comando,String cuerpo, String nick){
+    public void armaPaquete(String comando,String cuerpo,ArrayList us, String nick,String tipo){
     
         paquete = new ArrayList();
         if(comando==null)
@@ -471,8 +565,9 @@ System.out.println("ya estas avisado");
             nick="";
         paquete.add(comando);
         paquete.add(cuerpo);
-        paquete.add(this.usuarios);
+        paquete.add(us);
         paquete.add(nick);
+        paquete.add(tipo);
     }
     
     public class Zumbido implements Runnable{
@@ -577,7 +672,7 @@ System.out.println("ya estas avisado");
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new mensajero().setVisible(true);
+                new mensajero("TODOS",null,null).setVisible(true);
             }
         });
     }

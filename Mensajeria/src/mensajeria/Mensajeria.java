@@ -16,7 +16,7 @@ public class Mensajeria{
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        mensajero mensaje=new mensajero();
+        mensajero mensaje=new mensajero("TODOS",null,null);
         mensaje.setVisible(true);
         // TODO code application logic here
     }
