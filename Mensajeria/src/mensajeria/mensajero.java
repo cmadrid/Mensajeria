@@ -4,7 +4,8 @@
  */
 package mensajeria;
 
-import com.sun.xml.internal.ws.api.ha.HaInfo;
+
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -32,6 +33,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListModel;
 import javax.swing.WindowConstants;
@@ -295,6 +297,8 @@ System.out.println("ya estas avisado");
                 if(paquete.get(0).equals("INIPRI")){
                     System.out.println("esto son los destinatarios "+paquete.get(4));
                     mensajero privado = new mensajero((String) paquete.get(4),DIR,NICK);
+                    privado.jLabel2.setVisible(false);
+                    privado.jScrollPane1.setVisible(false);
                     chats.put((String) paquete.get(4), privado);
                     System.out.println(paquete.get(4)+"<-----------------1");
                     System.out.println(chats.get(paquete.get(4)));
@@ -389,9 +393,17 @@ System.out.println("ya estas avisado");
                                         armaPaquete("CERRARP",null,chats.get(key).getUsuarios(), chats.get(key).getNick(),key);
                                         new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
                                         llegadas.get(key).detener();
-                                        JOptionPane.showMessageDialog(chats.get(key), "El otro cliente se ha desconectado.");
-                                        chats.get(key).dispose();
+//                                        JOptionPane.showMessageDialog(chats.get(key), "El otro cliente se ha desconectado.");
+                                        chats.get(key).Usuarios.setEnabled(false);
+                                        chats.get(key).jButton1.disable();
+                                        chats.get(key).msj.setText("El otro usuario se ha desconectado.");
+                                        chats.get(key).msj.setEnabled(false);
+                                        chats.get(key).mensajes=chats.get(key).mensajes+"<font color=\"green\"> Se perdio la conexion con el otro usuario </font><br>";
+                                        chats.get(key).editor.setText(chats.get(key).mensajes);
+                                        if(!chats.get(key).isVisible())
+                                            chats.get(key).dispose();
                                         chats.remove(key);
+                                        
                                         
 //                                        chats.get(key).
                                         
@@ -478,6 +490,7 @@ System.out.println("ya estas avisado");
             }
         });
 
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Sistema de Mensajeria");
 
         jScrollPane2.setViewportView(editor);
@@ -503,10 +516,6 @@ System.out.println("ya estas avisado");
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(142, 142, 142)
-                .addComponent(jLabel1)
-                .addContainerGap(252, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -515,26 +524,29 @@ System.out.println("ya estas avisado");
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(msj)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                        .addGap(18, 18, 18)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(8, 8, 8)
+                                .addGap(26, 26, 26)
                                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addComponent(jLabel2))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(18, 18, 18)
+                                .addComponent(jLabel2)))
                         .addGap(18, 18, 18))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(21, Short.MAX_VALUE)
-                .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap(21, Short.MAX_VALUE)
+                        .addComponent(jLabel1)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(9, 9, 9)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(18, 18, 18)
                 .addComponent(jButton1)
@@ -571,6 +583,7 @@ System.out.println("ya estas avisado");
 
     private void UsuariosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_UsuariosMouseClicked
 
+  if(Usuarios.isEnabled())
     if(evt.getClickCount() == 2){
         int index = Usuarios.locationToIndex(evt.getPoint());
         ListModel dlm = Usuarios.getModel();
@@ -582,23 +595,28 @@ System.out.println("ya estas avisado");
             if(usuarios.get(i).equals(item.toString())||usuarios.get(i).equals(NICK))
                 participantes.add(usuarios.get(i));
         
-        if(chats.containsKey(participantes.get(0)+" "+participantes.get(1))){
-            armaPaquete("MOSTRAR", null, participantes, NICK, participantes.get(0)+" "+participantes.get(1));
-           
-        }else
         
-        
-        if(!item.equals(NICK)){
-            
-            Usuarios.ensureIndexIsVisible(index);
-            armaPaquete("INIPRI", null,participantes, NICK,participantes.get(0)+" "+participantes.get(1));
-           
 
-        }
-         try {
-                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
-            } catch (Exception e) {
+        if(!item.equals(NICK)){
+            if(chats.containsKey(participantes.get(0)+" "+participantes.get(1))){
+                armaPaquete("MOSTRAR", null, participantes, NICK, participantes.get(0)+" "+participantes.get(1));
+
+            }else
+
+
+            if(!item.equals(NICK)){
+
+                Usuarios.ensureIndexIsVisible(index);
+                armaPaquete("INIPRI", null,participantes, NICK,participantes.get(0)+" "+participantes.get(1));
+
+
             }
+             try {
+                 if(!item.equals(NICK))
+                    new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                } catch (Exception e) {
+                }
+        }
     }
         // TODO add your handling code here:
     }//GEN-LAST:event_UsuariosMouseClicked

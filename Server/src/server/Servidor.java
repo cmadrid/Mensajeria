@@ -121,7 +121,7 @@ public class Servidor {
             escriturasConv = new ArrayList();
             escrituras.put("TODOS", escriturasConv);
             
-            ubicacion.put(mensajeRecibido, 0);
+            ubicacion.put((String) paquete.get(4), 0);
             
         } catch (Exception e) {
             System.out.println("murio");
@@ -243,7 +243,7 @@ public class Escritura implements Runnable
                 System.out.println("paquete recibe 2");
                 
                 //el comando mandado para eliminar a un usuario de la lista
-                mensajeRecibido="<font color=\"#CC66CC\">"+paquete.get(3)+": </font>"+paquete.get(1);
+//                mensajeRecibido="<font color=\"#CC66CC\">"+paquete.get(3)+": </font>"+paquete.get(1);
                 
                 if(paquete.get(0).equals("INIPRI")){
                     
@@ -333,7 +333,7 @@ public class Escritura implements Runnable
                     (sockets.get(remitentes).get(n)).close();
                     sockets.get(remitentes).remove(n);
                     ubicacion.put(remitentes, ubicacion.get(remitentes)-1);
-                    mensajeRecibido = "<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>";
+//                    mensajeRecibido = "<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>";
 
                     int j = escrituras.get(remitentes).size();
                     for(int i = n; i<j;i++)

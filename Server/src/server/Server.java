@@ -27,12 +27,13 @@ public class Server extends javax.swing.JFrame {
     public Server() {
         initComponents();
         
+        
         addWindowListener(new WindowAdapter(){
         public void windowClosing(WindowEvent we){
         int eleccion = JOptionPane.showConfirmDialog(este, "Desea salir?");
         if ( eleccion == 0) {
             JOptionPane.showMessageDialog(este, "saliendo del sistema...");
-              
+              if(estado.getText().equals("ON"))
                 serv.terminar();
             
            
