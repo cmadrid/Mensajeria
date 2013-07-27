@@ -227,6 +227,7 @@ public class Escritura implements Runnable
             
             
             while(running){
+                Thread.sleep(50);
                 remitentes=respaldo;
                 System.out.println("asd "+n);
                 paquete =new ArrayList();
@@ -246,7 +247,7 @@ public class Escritura implements Runnable
                 
                 if(paquete.get(0).equals("INIPRI")){
                     
-                    if(!usuarios.containsKey(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1))&&!usuarios.containsKey(((ArrayList)paquete.get(2)).get(1)+" "+((ArrayList)paquete.get(2)).get(0))){
+                    if(!paquete.get(0).equals("CERRARP")&&!usuarios.containsKey(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1))&&!usuarios.containsKey(((ArrayList)paquete.get(2)).get(1)+" "+((ArrayList)paquete.get(2)).get(0))){
                         ArrayList nuevoUsuarios = new ArrayList();
                         for(int i =0;i<2;i++)
                             nuevoUsuarios.add(((ArrayList)paquete.get(2)).get(i));
@@ -269,6 +270,58 @@ public class Escritura implements Runnable
                 }
                 
                         System.out.println(usuarios.get(remitentes)+"3");
+                if(paquete.get(0).equals("CERRARP")){
+                    System.out.println(n);
+                    System.out.println(remitentes);
+                    System.out.println(usuarios.get(remitentes));
+//                    if(usuarios.get(remitentes).get(0).equals(paquete.get(3)))
+//                        n=0;
+//                    else
+//                        n=1;
+                    int i;
+                    if(usuarios.get(remitentes).get(0).equals(paquete.get(3)))
+                        i=0;
+                    else 
+                        i=1;
+                    {
+                        System.out.println(remitentes);
+                        System.out.println(usuarios.get(remitentes));
+                        System.out.println(usuarios.get(remitentes).get(i));
+                        usuarios.get(remitentes).remove(i);
+                        System.out.println("removio "+remitentes);
+                        (escrituras.get(remitentes).get(i)).detener();
+                        escrituras.get(remitentes).remove(i);
+                        System.out.println("1");
+                        (sockets.get(remitentes).get(i)).close();
+                        sockets.get(remitentes).remove(i);
+                        ubicacion.put(remitentes, ubicacion.get(remitentes)-1);
+                        System.out.println("2");
+                        System.out.println(escrituras.get(remitentes));
+                        if(escrituras.get(remitentes).size()==0){
+                            escrituras.remove(remitentes);
+                            sockets.remove(remitentes);
+                            usuarios.remove(remitentes);
+                            ubicacion.remove(remitentes);
+                            System.out.println("removios "+remitentes);
+                        }
+                    }
+//                    if(escrituras.containsKey(remitentes))
+//                        new ObjectOutputStream(sockets.get(remitentes).get(0).getOutputStream()).writeObject(paquete);
+                    armarPaquete((String)paquete.get(0),null,"TODOS", (String)paquete.get(3));
+                    if(escrituras.containsKey(remitentes))
+                        for(int m = 0;m<usuarios.get("TODOS").size();m++)
+                            if(usuarios.get(remitentes).contains(usuarios.get("TODOS").get(m)))
+                                new ObjectOutputStream(sockets.get("TODOS").get(m).getOutputStream()).writeObject(paquete);
+                        
+                    continue;
+                }
+                
+                
+                
+                
+                
+                
+                
                 if(paquete.get(0).equals("CERRAR")){
                     System.out.println(n);
                     System.out.println(remitentes);
@@ -284,9 +337,17 @@ public class Escritura implements Runnable
 
                     int j = escrituras.get(remitentes).size();
                     for(int i = n; i<j;i++)
-                        
                         ((Escritura)escrituras.get(remitentes).get(i)).reducen();
                 }
+                
+                
+                
+                
+                
+                
+                
+                
+                
                         System.out.println(usuarios.get(remitentes)+"4");
                 //System.out.println(usuarios+" es la lista de usuarios guardados");
                 if(paquete.get(4).equals("TODOS")){
@@ -305,8 +366,6 @@ public class Escritura implements Runnable
                         new ObjectOutputStream(sockets.get(remitentes).get(j).getOutputStream()).writeObject(paquete);
 
                     }
-                    if(paquete.get(0).equals("MOSTRAR"))
-                        remitentes=respaldo;
                 }
                 else{
                     for(int j = 0;j<escrituras.get("TODOS").size();j++){
@@ -319,6 +378,8 @@ public class Escritura implements Runnable
         } catch (IOException ex) {
             System.out.println("error envio de mensaje a TODOS los usuarios");
         } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InterruptedException ex) {
             Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
         } 
     }

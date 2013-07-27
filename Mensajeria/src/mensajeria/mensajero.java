@@ -4,6 +4,7 @@
  */
 package mensajeria;
 
+import com.sun.xml.internal.ws.api.ha.HaInfo;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
@@ -58,6 +59,18 @@ public class mensajero extends javax.swing.JFrame {
     Thread zumbido = new Thread(zumba);
     static Map<String, mensajero> chats = new HashMap<>();
     String TIPO;
+    int detener =999;
+    
+    static Map<String,Llegada> llegadas = new HashMap<>();
+
+    public ArrayList getUsuarios() {
+        return usuarios;
+    }
+    public String getNick() {
+        return NICK;
+    }
+    
+    
     public mensajero(final String tipo,String dir,String nick) {
         TIPO=tipo;
         initComponents();
@@ -73,8 +86,9 @@ public class mensajero extends javax.swing.JFrame {
             DIR=dir;
         
         
-        final Llegada llegada = new Llegada();
 
+    final Llegada llegada = new Llegada();
+    llegadas.put(tipo, llegada);
         
             System.out.println("1");
             int vueltas = 0;
@@ -151,7 +165,7 @@ public class mensajero extends javax.swing.JFrame {
                 
                 
                 
-                Thread llega = new Thread(llegada);
+                Thread llega = new Thread(llegadas.get(tipo));
                 llega.start();
             } catch (Exception e) {
                 vueltas++;
@@ -169,23 +183,40 @@ public class mensajero extends javax.swing.JFrame {
                         if ( eleccion == 0) {
                             JOptionPane.showMessageDialog(este, "saliendo...");
                             try {
-                                if(tipo.equals("TODOS"))
-                                    armaPaquete("CERRAR", null,usuarios, NICK,TIPO);
-                                else
-                                    armaPaquete("CERRARP", null,usuarios, NICK,TIPO);
-                                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                                ArrayList<ArrayList> paquetes = new ArrayList<>();
+                                Iterator it = chats.keySet().iterator();
+                                while(it.hasNext()){
+                                    String key= (String) it.next();
+                                        armaPaquete("CERRARP",null,chats.get(key).getUsuarios(), NICK,key);
+                                        paquetes.add(paquete);
+                                        chats.get(key).dispose();
+                                }
+                                
                                 System.out.println("paso la prueba");
-                            } catch (IOException ex) {
-                                System.out.println("no se envio el cerrar");
-                            }
-
-                            
-                            if(tipo.equals("TODOS")){
+                                System.out.println(paquetes);
+                                for(int i =0;i<paquetes.size();i++){
+                                    new ObjectOutputStream(mens.getOutputStream()).writeObject(paquetes.get(i));
+                                    Thread.sleep(50);
+                                }
+                                armaPaquete("CERRAR", null,usuarios, NICK,TIPO);
+                                new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                                detener=1000;
                                 llegada.detener();
                                 System.exit(0);
+                            } catch (IOException ex) {
+                                System.out.println("no se envio el cerrar");
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
                             }
-                            
                         }   
+                    }
+                     });
+                }else{
+                    addWindowListener(new WindowAdapter(){
+                        public void windowClosing(WindowEvent we){
+                            mensajes="";
+                            editor.setText(mensajes);
+                            este.setVisible(false);
                     }
                      });
                 }
@@ -211,6 +242,7 @@ System.out.println("ya estas avisado");
         public void run() {
             try {
                while(running){
+                   Thread.sleep(50);
                    
                 ObjectInputStream entrada = new ObjectInputStream(mens.getInputStream());
                 paquete =new ArrayList();
@@ -256,7 +288,8 @@ System.out.println("ya estas avisado");
                     System.out.println(chats);
                     System.out.println(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1)+" <-1111111111111111111111");
                     System.out.println(chats.get(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1))+" 222");
-                    chats.get(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1)).show();
+                    if(NICK.equals(paquete.get(3)))
+                        chats.get(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1)).setVisible(true);
                     continue;
                 }
                 if(paquete.get(0).equals("INIPRI")){
@@ -266,7 +299,8 @@ System.out.println("ya estas avisado");
                     System.out.println(paquete.get(4)+"<-----------------1");
                     System.out.println(chats.get(paquete.get(4)));
                     System.out.println(chats);
-                    privado.setVisible(true);
+                    if(NICK.equals(paquete.get(3)))
+                        privado.setVisible(true);
                     continue;
                 }
                     
@@ -330,19 +364,42 @@ System.out.println("ya estas avisado");
                 /**Seccion Emoticones fin**/
                 
                 //instrucciones segun comandos
-                if(paquete.get(0).equals("CERARP")){
-                    Iterator it = chats.keySet().iterator();
-                    while(it.hasNext()){
-                        String key = (String) it.next();
-                        mensajero mensajeross = chats.get(key);
-                        JOptionPane.showConfirmDialog(null,"Ha terminado la conversacion");
-                        mensajeross.dispose();
-                
-                    }
-                }
+//                if(paquete.get(0).equals("CERARP")){
+//                    Iterator it = chats.keySet().iterator();
+//                    while(it.hasNext()){
+//                        String key = (String) it.next();
+//                        mensajero mensajeross = chats.get(key);
+//                        JOptionPane.showConfirmDialog(null,"Ha terminado la conversacion");
+//                        mensajeross.dispose();
+//                
+//                    }
+//                }
                 if(paquete.get(0).equals("CERRARP")){
-                    JOptionPane.showConfirmDialog(null, "Secion finalizo");
-                    este.hide();
+//                    armaPaquete((String)paquete.get(0), null, (ArrayList)paquete.get(2), NICK, (String)paquete.get(4));
+//                    new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+//                    llegada.detener();
+//                    JOptionPane.showConfirmDialog(null, "Secion finalizo");
+//                    este.dispose();
+//                    continue;
+                    try {
+                                Iterator it = chats.keySet().iterator();
+                                while(it.hasNext()){
+                                    String key = (String) it.next();
+                                    if(((mensajero)chats.get(key)).getUsuarios().contains(paquete.get(3))){
+                                        armaPaquete("CERRARP",null,chats.get(key).getUsuarios(), chats.get(key).getNick(),key);
+                                        new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                                        llegadas.get(key).detener();
+                                        JOptionPane.showMessageDialog(chats.get(key), "El otro cliente se ha desconectado.");
+                                        chats.get(key).dispose();
+                                        chats.remove(key);
+                                        
+//                                        chats.get(key).
+                                        
+                                    }
+                                }
+                            } catch (IOException ex) {
+                                System.out.println("no se envio el cerrar");
+                            }
                     continue;
                 }
                 
@@ -351,6 +408,11 @@ System.out.println("ya estas avisado");
                     if(!paquete.get(3).equals("Yo"))alertmsj.start();//reproduce el audio.
                     este.setVisible(true);
                 }
+                
+                //para que no lleguen notificaciones de ingresos a las conversaciones privadas.
+                if(paquete.get(0).equals("ENTRAR")&&!paquete.get(4).equals("TODOS"))
+                    continue;
+                
                 else
                     if(paquete.get(0).equals("CERRAR"))
                         mensajes = mensajes+"<font color=\"#CC66CC\">"+paquete.get(3)+" ha abandonado la conversacion.</font>"+"<br>";
@@ -375,7 +437,9 @@ System.out.println("ya estas avisado");
                }
             } catch (Exception e) {
                 System.out.println("error en actualizar el chat");
-                run();
+
+                if(detener!=1000)
+                    run();
             }
         }
         
@@ -530,7 +594,6 @@ System.out.println("ya estas avisado");
             armaPaquete("INIPRI", null,participantes, NICK,participantes.get(0)+" "+participantes.get(1));
            
 
-        JOptionPane.showMessageDialog(este, "Chat privado no disponible en version de prueba...");
         }
          try {
                 new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
