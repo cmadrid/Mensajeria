@@ -62,6 +62,8 @@ public class mensajero extends javax.swing.JFrame {
     static Map<String, mensajero> chats = new HashMap<>();
     String TIPO;
     int detener =999;
+    String Directorio;
+    String letra="Arial";
     
     static Map<String,Llegada> llegadas = new HashMap<>();
 
@@ -74,8 +76,16 @@ public class mensajero extends javax.swing.JFrame {
     
     
     public mensajero(final String tipo,String dir,String nick) {
+        //Ubico directorio dond almaceno mis archivos dentro del .jar
+        Directorio=getClass().getResource("").toExternalForm();
+        Directorio=(String) Directorio.subSequence(0, Directorio.length()-11);
         TIPO=tipo;
         initComponents();
+        try {
+        zumbidoBtn.setIcon(new ImageIcon(new URL(Directorio+"emoti/zumbido.png")));
+            
+        } catch (Exception e) {
+        }
         zumbido.start();
         
         editor.setContentType("text/html");
@@ -258,9 +268,7 @@ System.out.println("ya estas avisado");
                    
                    
                 
-                //Ubico directorio dond almaceno mis archivos dentro del .jar
-                String Directorio=getClass().getResource("").toExternalForm();
-                Directorio=(String) Directorio.subSequence(0, Directorio.length()-11);
+                
                 
                 URL zumbidoUrl = new URL(Directorio+"sonidos/nudge.wav");
                 Clip zumb = AudioSystem.getClip();
@@ -343,20 +351,23 @@ System.out.println("ya estas avisado");
                        paquete.add(3,"Yo");
                    }
                    
-                   /** seccion emoticones **/
+                   
                    
                 String men = (String) paquete.get(1);
                 
                 
                 
                 
-                men = men.replace(":D", "<img src='"+Directorio+"emoti/feliz.gif"+"' width=15 height=15></img>");
                 
-//                   System.out.println(getClass().getResource("emoti/feliz.gif").toExternalForm()+"(Y)");
+                /** seccion emoticones **/
+                men = men.replace(":D", "<img src='"+Directorio+"emoti/feliz.gif"+"' width=15 height=15></img>");
                 men = men.replace(":S", "<img src='"+Directorio+"emoti/ss.png"+"' width=15 height=15></img>");
                 men = men.replace(":PALM:", "<img src='"+Directorio+"emoti/palm.png"+"' width=15 height=15></img>");
                 men = men.replace(":EVIL:", "<img src='"+Directorio+"emoti/evil.png"+"' width=15 height=15></img>");
                 men = men.replace("(Y)", "<img src='"+Directorio+"emoti/Me gusta.jpg"+"' width=15 height=15></img>");
+                
+                //añadiendo fuentes y estilos
+                
                 paquete.remove(1);
                 paquete.add(1, men);
                 //<img src='' width=15 height=15></img>
@@ -395,7 +406,7 @@ System.out.println("ya estas avisado");
                                         llegadas.get(key).detener();
 //                                        JOptionPane.showMessageDialog(chats.get(key), "El otro cliente se ha desconectado.");
                                         chats.get(key).Usuarios.setEnabled(false);
-                                        chats.get(key).jButton1.disable();
+                                        chats.get(key).zumbidoBtn.disable();
                                         chats.get(key).msj.setText("El otro usuario se ha desconectado.");
                                         chats.get(key).msj.setEnabled(false);
                                         chats.get(key).mensajes=chats.get(key).mensajes+"<font color=\"green\"> Se perdio la conexion con el otro usuario </font><br>";
@@ -480,7 +491,10 @@ System.out.println("ya estas avisado");
         jScrollPane1 = new javax.swing.JScrollPane();
         Usuarios = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        zumbidoBtn = new javax.swing.JButton();
+        FuentesCB = new javax.swing.JComboBox();
+        BoldBtn = new javax.swing.JToggleButton();
+        ItalicBtn = new javax.swing.JToggleButton();
 
         setResizable(false);
 
@@ -504,12 +518,24 @@ System.out.println("ya estas avisado");
 
         jLabel2.setText("Usuarios Conectados");
 
-        jButton1.setText("Zumbido ((:S))");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        zumbidoBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                zumbidoBtnActionPerformed(evt);
             }
         });
+
+        FuentesCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Arial", "Arial Black", "Comic Sans MS", "Georgia", "Kristen ITC", "Tahoma", "Times New Roman", "Verdana", "Wide Latin" }));
+        FuentesCB.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                FuentesCBItemStateChanged(evt);
+            }
+        });
+
+        BoldBtn.setFont(new java.awt.Font("Tahoma", 1, 12)); // NOI18N
+        BoldBtn.setText("N");
+
+        ItalicBtn.setFont(new java.awt.Font("Tahoma", 2, 12)); // NOI18N
+        ItalicBtn.setText("I");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -519,7 +545,13 @@ System.out.println("ya estas avisado");
                 .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton1)
+                        .addComponent(zumbidoBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(FuentesCB, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(BoldBtn)
+                        .addGap(10, 10, 10)
+                        .addComponent(ItalicBtn)
                         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -540,7 +572,7 @@ System.out.println("ya estas avisado");
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(21, Short.MAX_VALUE)
+                        .addContainerGap(19, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -548,9 +580,13 @@ System.out.println("ya estas avisado");
                         .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(9, 9, 9)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGap(18, 18, 18)
-                .addComponent(jButton1)
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(zumbidoBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(ItalicBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                    .addComponent(FuentesCB, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(BoldBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(msj, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(29, 29, 29))
         );
@@ -566,8 +602,17 @@ System.out.println("ya estas avisado");
         { 
             if(!msj.getText().equalsIgnoreCase("")){
                 try {
-                    
-                    armaPaquete(null, msj.getText(),usuarios, NICK,TIPO);
+                    String enviar =msj.getText();
+                    //eliminando codigo html no permitido
+                    enviar = enviar.replace("<", "&lt;");
+                    enviar = enviar.replace(">", "&gt;");
+                    //agregando fuentes y estilos 
+                    enviar="<FONT FACE=\""+letra+"\">"+enviar+"</FONT>";
+                    if(BoldBtn.isSelected())
+                        enviar="<b>"+enviar+"</b>";
+                    if(ItalicBtn.isSelected())
+                        enviar="<i>"+enviar+"</i>";
+                    armaPaquete(null,enviar,usuarios, NICK,TIPO);
                     ObjectOutputStream mensaje = new ObjectOutputStream(mens.getOutputStream());
                     mensaje.writeObject(paquete);
                     System.out.println(paquete);
@@ -621,7 +666,7 @@ System.out.println("ya estas avisado");
         // TODO add your handling code here:
     }//GEN-LAST:event_UsuariosMouseClicked
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void zumbidoBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zumbidoBtnActionPerformed
 
         try {
 
@@ -633,7 +678,13 @@ System.out.println("ya estas avisado");
         }
 
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_zumbidoBtnActionPerformed
+
+    private void FuentesCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_FuentesCBItemStateChanged
+
+        letra = (String) FuentesCB.getSelectedItem();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_FuentesCBItemStateChanged
 
     public void armaPaquete(String comando,String cuerpo,ArrayList us, String nick,String tipo){
     
@@ -758,13 +809,16 @@ System.out.println("ya estas avisado");
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton BoldBtn;
+    private javax.swing.JComboBox FuentesCB;
+    private javax.swing.JToggleButton ItalicBtn;
     private javax.swing.JList Usuarios;
     private javax.swing.JEditorPane editor;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField msj;
+    private javax.swing.JButton zumbidoBtn;
     // End of variables declaration//GEN-END:variables
 }
