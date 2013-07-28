@@ -233,7 +233,9 @@ public class mensajero extends javax.swing.JFrame {
                      });
                 }
                 
-                
+                escribiendo esc = new escribiendo();
+                Thread escri = new Thread(esc);
+                escri.start();
             
             
             
@@ -302,6 +304,15 @@ System.out.println("ya estas avisado");
                         chats.get(((ArrayList)paquete.get(2)).get(0)+" "+((ArrayList)paquete.get(2)).get(1)).setVisible(true);
                     continue;
                 }
+                
+                if(paquete.get(0).equals("ESCRIBIENDO")){
+                    if(!paquete.get(3).equals(NICK)&&paquete.get(1).equals("0"))
+                        escribiendo.setText(paquete.get(3)+" se encuentra escribiendo.");
+                    if(!paquete.get(3).equals(NICK)&&paquete.get(1).equals("1"))
+                        escribiendo.setText("  ");
+                    continue;
+                }
+                
                 if(paquete.get(0).equals("INIPRI")){
                     System.out.println("esto son los destinatarios "+paquete.get(4));
                     mensajero privado = new mensajero((String) paquete.get(4),DIR,NICK);
@@ -492,9 +503,10 @@ System.out.println("ya estas avisado");
         Usuarios = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
         zumbidoBtn = new javax.swing.JButton();
-        FuentesCB = new javax.swing.JComboBox();
+        Fuentes = new javax.swing.JComboBox();
         BoldBtn = new javax.swing.JToggleButton();
         ItalicBtn = new javax.swing.JToggleButton();
+        escribiendo = new javax.swing.JLabel();
 
         setResizable(false);
 
@@ -524,10 +536,10 @@ System.out.println("ya estas avisado");
             }
         });
 
-        FuentesCB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Arial", "Arial Black", "Comic Sans MS", "Georgia", "Kristen ITC", "Tahoma", "Times New Roman", "Verdana", "Wide Latin" }));
-        FuentesCB.addItemListener(new java.awt.event.ItemListener() {
+        Fuentes.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Arial", "Arial Black", "Comic Sans MS", "Georgia", "Kristen ITC", "Tahoma", "Times New Roman", "Verdana", "Wide Latin" }));
+        Fuentes.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                FuentesCBItemStateChanged(evt);
+                FuentesItemStateChanged(evt);
             }
         });
 
@@ -537,6 +549,8 @@ System.out.println("ya estas avisado");
         ItalicBtn.setFont(new java.awt.Font("Tahoma", 2, 12)); // NOI18N
         ItalicBtn.setText("I");
 
+        escribiendo.setText("    ");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -545,34 +559,40 @@ System.out.println("ya estas avisado");
                 .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(zumbidoBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(FuentesCB, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(BoldBtn)
-                        .addGap(10, 10, 10)
-                        .addComponent(ItalicBtn)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(msj)
-                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 357, Short.MAX_VALUE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 366, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(26, 26, 26)
-                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addGap(18, 18, 18)
-                                .addComponent(jLabel2)))
-                        .addGap(18, 18, 18))))
+                                .addComponent(jLabel2))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGap(17, 17, 17)
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(26, 26, 26))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(zumbidoBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(Fuentes, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(BoldBtn)
+                                .addGap(10, 10, 10)
+                                .addComponent(ItalicBtn))
+                            .addComponent(escribiendo, javax.swing.GroupLayout.PREFERRED_SIZE, 354, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(157, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(19, Short.MAX_VALUE)
+                        .addContainerGap(22, Short.MAX_VALUE)
                         .addComponent(jLabel1)
                         .addGap(18, 18, 18)
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 153, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -580,15 +600,17 @@ System.out.println("ya estas avisado");
                         .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGap(9, 9, 9)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(escribiendo, javax.swing.GroupLayout.PREFERRED_SIZE, 12, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(zumbidoBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(ItalicBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
-                    .addComponent(FuentesCB, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(ItalicBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 33, Short.MAX_VALUE)
+                    .addComponent(Fuentes, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(BoldBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(msj, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(29, 29, 29))
+                .addContainerGap())
         );
 
         pack();
@@ -680,11 +702,39 @@ System.out.println("ya estas avisado");
         // TODO add your handling code here:
     }//GEN-LAST:event_zumbidoBtnActionPerformed
 
-    private void FuentesCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_FuentesCBItemStateChanged
+    private void FuentesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_FuentesItemStateChanged
 
-        letra = (String) FuentesCB.getSelectedItem();
+        letra = (String) Fuentes.getSelectedItem();
         // TODO add your handling code here:
-    }//GEN-LAST:event_FuentesCBItemStateChanged
+    }//GEN-LAST:event_FuentesItemStateChanged
+
+    public class escribiendo implements Runnable{
+        boolean running = true;
+        @Override
+        public void run() {
+            try {
+                while(running){
+                    
+                    String anterior = msj.getText();
+                    Thread.sleep(2000);
+                    String actual = msj.getText();
+                    if(!anterior.equals(actual)){
+                        armaPaquete("ESCRIBIENDO", "0", usuarios, NICK, TIPO);
+                        new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                    }
+                    else{
+                        armaPaquete("ESCRIBIENDO", "1", usuarios, NICK, TIPO);
+                        new ObjectOutputStream(mens.getOutputStream()).writeObject(paquete);
+                    }
+                }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(mensajero.class.getName()).log(Level.SEVERE, null, ex);
+            }catch(Exception e){
+                System.out.println("error escritura "+e.getMessage());
+            }
+            
+        }
+    }
 
     public void armaPaquete(String comando,String cuerpo,ArrayList us, String nick,String tipo){
     
@@ -810,10 +860,11 @@ System.out.println("ya estas avisado");
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton BoldBtn;
-    private javax.swing.JComboBox FuentesCB;
+    private javax.swing.JComboBox Fuentes;
     private javax.swing.JToggleButton ItalicBtn;
     private javax.swing.JList Usuarios;
     private javax.swing.JEditorPane editor;
+    private javax.swing.JLabel escribiendo;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
