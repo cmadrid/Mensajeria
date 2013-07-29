@@ -227,7 +227,7 @@ public class Escritura implements Runnable
             
             
             while(running){
-                Thread.sleep(50);
+                Thread.sleep(5);
                 remitentes=respaldo;
                 System.out.println("asd "+n);
                 paquete =new ArrayList();
