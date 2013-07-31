@@ -15,8 +15,13 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 /**
  *
@@ -31,7 +36,18 @@ public class Navegador extends javax.swing.JFrame {
     public Navegador() {
         initComponents();
         Nav.setContentType("text/html");
-        Nav.setText("<html><body>This is a very simple webpage.<br/><br/>It has three hyperlinks:<a href='http://www.cs.bham.ac.uk/~tpc/testpages/page1.html'>this one</a>,<a href='http://www.cs.bham.ac.uk/~tpc/testpages/page2.html'>this one</a> and <a href='http://www.cs.bham.ac.uk/~tpc/testpages/page3.html'>this one</a><br/>That's it for this page.</body></html>");
+        Nav.setEditable(false);
+        Nav.addHyperlinkListener(new HyperlinkListener() {
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+        if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+           JOptionPane.showMessageDialog( null, e.getURL().toString());
+           url.setText(e.getURL().toExternalForm());
+           url.requestFocus();
+           Cargar();
+           
+        }
+    }
+});
     }
 
     /**
@@ -43,13 +59,11 @@ public class Navegador extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        Nav = new javax.swing.JEditorPane();
         url = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        Nav = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-
-        jScrollPane1.setViewportView(Nav);
 
         url.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
@@ -57,14 +71,16 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
+        jScrollPane2.setViewportView(Nav);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1052, Short.MAX_VALUE)
                     .addComponent(url))
                 .addContainerGap())
         );
@@ -74,7 +90,7 @@ public class Navegador extends javax.swing.JFrame {
                 .addContainerGap(83, Short.MAX_VALUE)
                 .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -87,7 +103,14 @@ public class Navegador extends javax.swing.JFrame {
     
         if(key==KeyEvent.VK_ENTER)
         {
-            try {
+            
+            Cargar();
+        
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_urlKeyPressed
+public void Cargar(){
+        try {
                 String Url =url.getText().replaceAll("http://", "");
                 String cadenas[]=Url.split("/");
                 System.out.println(Url.substring(cadenas[0].length()));
@@ -114,18 +137,14 @@ public class Navegador extends javax.swing.JFrame {
                 }
                 String[] codigo =guardar.split("<");
                 String ultimo= guardar.substring(codigo[0].length());
-                System.out.println(guardar);
+                System.out.println(ultimo);
                 Nav.setText(ultimo);
             } catch (IOException ex) {
 //                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
                 Nav.setText("<h>Error: Pagina no encontrada</h>");
             }
-            
-        
-        }
-        // TODO add your handling code here:
-    }//GEN-LAST:event_urlKeyPressed
 
+}
     /**
      * @param args the command line arguments
      */
@@ -161,8 +180,8 @@ public class Navegador extends javax.swing.JFrame {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane Nav;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JTextPane Nav;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField url;
     // End of variables declaration//GEN-END:variables
 }
