@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -30,20 +31,25 @@ import javax.swing.event.HyperlinkListener;
 public class Navegador extends javax.swing.JFrame {
 
     Socket conexion = new Socket();
+    Cargar cargar = new Cargar();
+    Thread carga;
+    JFrame este = this;
     /**
      * Creates new form Navegador
      */
     public Navegador() {
         initComponents();
+        carga = new Thread(cargar);
+        carga.start();
         Nav.setContentType("text/html");
         Nav.setEditable(false);
         Nav.addHyperlinkListener(new HyperlinkListener() {
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-           JOptionPane.showMessageDialog( null, e.getURL().toString());
+//           JOptionPane.showMessageDialog( null, e.getURL().toString());
            url.setText(e.getURL().toExternalForm());
            url.requestFocus();
-           Cargar();
+           cargar.cargarPag();
            
         }
     }
@@ -104,45 +110,72 @@ public class Navegador extends javax.swing.JFrame {
         if(key==KeyEvent.VK_ENTER)
         {
             
-            Cargar();
+            cargar.cargarPag();
         
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_urlKeyPressed
-public void Cargar(){
-        try {
-                String Url =url.getText().replaceAll("http://", "");
-                String cadenas[]=Url.split("/");
-                System.out.println(Url.substring(cadenas[0].length()));
-                String servidor=cadenas[0];
-                String pagina =Url.substring(cadenas[0].length());
-                conexion.close();
-                conexion=new Socket(InetAddress.getByName(servidor), 80);
-                System.out.println(pagina+' '+servidor);
-                String requerimiento="\n\n\n\nGET "+pagina+" HTTP/1.1\nHost: "+servidor+"\n\n\n";
-                
-                PrintWriter pw = new PrintWriter(conexion.getOutputStream());
-                pw.print(requerimiento);
-                pw.flush();
-                String guardar;
-                BufferedReader in = new BufferedReader(new InputStreamReader(conexion.getInputStream()));
-                guardar = in.readLine();
-                boolean continuar=true;
-                while(continuar){
-                    String linea= in.readLine();
-                    if(linea!=null)
-                        guardar = guardar+"\n" +linea;
-                    else
-                        continuar=false;
+public class Cargar implements Runnable{
+        
+    boolean correr=false;
+    boolean continuar=true;
+        @Override
+        public void run() {
+            try {
+                while(true){
+                    Thread.sleep(50);
+                    if(correr){
+                        String Url =url.getText().replaceAll("http://", "");
+                        String cadenas[]=Url.split("/");
+                        System.out.println(Url.substring(cadenas[0].length()));
+                        String servidor=cadenas[0];
+                        String pagina =Url.substring(cadenas[0].length());
+                        conexion.close();
+                        conexion=new Socket(InetAddress.getByName(servidor), 80);
+                        System.out.println(pagina+' '+servidor);
+                        String requerimiento="\n\n\n\nGET "+pagina+" HTTP/1.1\nHost: "+servidor+"\n\n\n";
+
+                        PrintWriter pw = new PrintWriter(conexion.getOutputStream());
+                        pw.print(requerimiento);
+                        pw.flush();
+                        String guardar;
+                        BufferedReader in = new BufferedReader(new InputStreamReader(conexion.getInputStream()));
+                        guardar = in.readLine();
+                        continuar=true;
+                        while(continuar){
+                            String linea= in.readLine();
+                            
+                            if(linea!=null)
+                                guardar = guardar+"\n" +linea;
+                            if(linea.toUpperCase().contains("</BODY>"))
+                                continuar=false;
+                        }
+                        String[] codigo =guardar.split("<");
+                        String ultimo= guardar.substring(codigo[0].length());
+                        System.out.println(ultimo);
+                        Nav.setText(ultimo);
+                        if(ultimo.toUpperCase().contains("<TITLE>"))
+                            este.setTitle(ultimo.substring(ultimo.toUpperCase().indexOf("<TITLE>")+7, ultimo.toUpperCase().indexOf("</TITLE>")));
+                        else
+                            este.setTitle(Url);
+                        correr=false;
+                    }
                 }
-                String[] codigo =guardar.split("<");
-                String ultimo= guardar.substring(codigo[0].length());
-                System.out.println(ultimo);
-                Nav.setText(ultimo);
             } catch (IOException ex) {
 //                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
                 Nav.setText("<h>Error: Pagina no encontrada</h>");
+            } catch (InterruptedException ex) {
+            Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
             }
+            
+            
+        }
+        
+        public void cargarPag(){
+            continuar=false;
+            
+            correr=true;
+        }
 
 }
     /**
