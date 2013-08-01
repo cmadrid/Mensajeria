@@ -17,10 +17,15 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -34,11 +39,14 @@ public class Navegador extends javax.swing.JFrame {
     Cargar cargar = new Cargar();
     Thread carga;
     JFrame este = this;
+    ArrayList<String> Historial = new ArrayList<>();
+    int num=-1;
     /**
      * Creates new form Navegador
      */
     public Navegador() {
         initComponents();
+        Tab1.setTabComponentAt(0, new Pestañas());
         carga = new Thread(cargar);
         carga.start();
         Nav.setContentType("text/html");
@@ -47,9 +55,16 @@ public class Navegador extends javax.swing.JFrame {
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 //           JOptionPane.showMessageDialog( null, e.getURL().toString());
-           url.setText(e.getURL().toExternalForm());
-           url.requestFocus();
+           cargar.setUrl(e.getURL().toExternalForm());
+           int temp = Historial.size();
+            if(temp!=num+1)
+                for(int i=num+1;i<temp;i++)
+                    Historial.remove(i);
+           Historial.add(e.getURL().toExternalForm());
+           num++;
            cargar.cargarPag();
+           Adelante.setEnabled(false);
+           
            
         }
     }
@@ -66,8 +81,14 @@ public class Navegador extends javax.swing.JFrame {
     private void initComponents() {
 
         url = new javax.swing.JTextField();
+        Atras = new javax.swing.JButton();
+        Adelante = new javax.swing.JButton();
+        Recargar = new javax.swing.JButton();
+        Tab1 = new javax.swing.JTabbedPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         Nav = new javax.swing.JTextPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTextPane1 = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -77,26 +98,66 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
+        Atras.setText("Atras");
+        Atras.setEnabled(false);
+        Atras.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                AtrasMouseReleased(evt);
+            }
+        });
+
+        Adelante.setText("Adelante");
+        Adelante.setEnabled(false);
+        Adelante.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                AdelanteMouseReleased(evt);
+            }
+        });
+
+        Recargar.setText("Recargar");
+        Recargar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                RecargarMouseReleased(evt);
+            }
+        });
+
         jScrollPane2.setViewportView(Nav);
+
+        Tab1.addTab("tab1", jScrollPane2);
+
+        jScrollPane1.setViewportView(jTextPane1);
+
+        Tab1.addTab("tab2", jScrollPane1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 1052, Short.MAX_VALUE)
-                    .addComponent(url))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(Tab1)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(Atras)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Adelante)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(Recargar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 827, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(83, Short.MAX_VALUE)
-                .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(Atras)
+                    .addComponent(Adelante)
+                    .addComponent(Recargar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -109,23 +170,66 @@ public class Navegador extends javax.swing.JFrame {
     
         if(key==KeyEvent.VK_ENTER)
         {
-            
+            cargar.setUrl(url.getText());
+            int temp = Historial.size();
+            if(temp!=num+1)
+                for(int i=num+1;i<temp;i++)
+                    Historial.remove(i);
+           Historial.add(url.getText());
+           num++;
             cargar.cargarPag();
+            Adelante.setEnabled(false);
         
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_urlKeyPressed
+
+    private void AtrasMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AtrasMouseReleased
+        if(Atras.isEnabled()){
+            num--;
+            cargar.setUrl(Historial.get(num));
+    //        if(Historial.size()!=num+1)
+    //            System.out.println("ohlasdasd");
+            cargar.cargarPag();
+            Adelante.setEnabled(true);
+            if(num==0)
+                Atras.setEnabled(false);
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AtrasMouseReleased
+
+    private void AdelanteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdelanteMouseReleased
+        if(Adelante.isEnabled()){
+            cargar.setUrl(Historial.get(num+1));
+            num++;
+            cargar.cargarPag();
+            if(Historial.size()==num+1)
+                Adelante.setEnabled(false);
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AdelanteMouseReleased
+
+    private void RecargarMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecargarMouseReleased
+
+        cargar.cargarPag();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_RecargarMouseReleased
 public class Cargar implements Runnable{
         
     boolean correr=false;
     boolean continuar=true;
+    String Url="";
         @Override
         public void run() {
-            try {
-                while(true){
+            while(true){
+                try {
                     Thread.sleep(50);
                     if(correr){
-                        String Url =url.getText().replaceAll("http://", "");
+                        Nav.removeAll();
+                        url.setText(Url);
+                        Url =Url.replaceAll("http://", "");
+                        if(!Url.contains("/"))
+                            Url=Url+"/";
                         String cadenas[]=Url.split("/");
                         System.out.println(Url.substring(cadenas[0].length()));
                         String servidor=cadenas[0];
@@ -153,21 +257,36 @@ public class Cargar implements Runnable{
                         String[] codigo =guardar.split("<");
                         String ultimo= guardar.substring(codigo[0].length());
                         System.out.println(ultimo);
+                        System.out.println("1");
                         Nav.setText(ultimo);
-                        if(ultimo.toUpperCase().contains("<TITLE>"))
+                        System.out.println("2");
+                        Pestañas p1 = new Pestañas();
+                        Tab1.setTabComponentAt(0, p1);
+                        if(ultimo.toUpperCase().contains("<TITLE>")){
                             este.setTitle(ultimo.substring(ultimo.toUpperCase().indexOf("<TITLE>")+7, ultimo.toUpperCase().indexOf("</TITLE>")));
-                        else
+                            p1.setTitle(ultimo.substring(ultimo.toUpperCase().indexOf("<TITLE>")+7, ultimo.toUpperCase().indexOf("</TITLE>")));
+                        }
+                        else{
                             este.setTitle(Url);
+                            p1.setTitle(Url);
+                        }
                         correr=false;
+                        if(num!=0)
+                            Atras.setEnabled(true);
                     }
+                
+                } catch (IOException ex) {
+    //                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
+                    Nav.setText("<h>Error: Pagina no encontrada</h>");
+                    correr=false;
+                } catch (InterruptedException ex) {
+                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
+                }catch(Exception e){
+                    Nav.setText("<h>Error: Pagina no encontrada</h>");
+                    correr=false;
                 }
-            } catch (IOException ex) {
-//                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
-                Nav.setText("<h>Error: Pagina no encontrada</h>");
-            } catch (InterruptedException ex) {
-            Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
-            }
             
+            }
             
         }
         
@@ -175,6 +294,9 @@ public class Cargar implements Runnable{
             continuar=false;
             
             correr=true;
+        }
+        public void setUrl(String url){
+            Url=url;
         }
 
 }
@@ -213,8 +335,14 @@ public class Cargar implements Runnable{
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Adelante;
+    private javax.swing.JButton Atras;
     private javax.swing.JTextPane Nav;
+    private javax.swing.JButton Recargar;
+    private javax.swing.JTabbedPane Tab1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextPane jTextPane1;
     private javax.swing.JTextField url;
     // End of variables declaration//GEN-END:variables
 }
