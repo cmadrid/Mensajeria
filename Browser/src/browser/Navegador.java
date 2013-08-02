@@ -4,6 +4,7 @@
  */
 package browser;
 
+import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -22,8 +23,10 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.event.HyperlinkEvent;
@@ -41,14 +44,37 @@ public class Navegador extends javax.swing.JFrame {
     JFrame este = this;
     ArrayList<String> Historial = new ArrayList<>();
     int num=-1;
+    String Directorio;
+    Pestañas p1 = new Pestañas();
+    String Html="";
+    String Respuesta="";
     /**
      * Creates new form Navegador
      */
     public Navegador() {
         initComponents();
-        Tab1.setTabComponentAt(0, new Pestañas());
+        //directorio dond localizar los recursos
+        Directorio=getClass().getResource("").toExternalForm();
+        Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
+        
+        //pestaña 1
+        
+        p1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                pestañaClicker(evt);
+            }
+        });
+        
+        Tab1.setTabComponentAt(0, p1);
+        //añadiendo un poopmenu a las pestaña
+        jPopupMenu1.add(mostrarPag);
+        jPopupMenu1.add(mostrarHttp);
+        ((JComponent)Tab1.getTabComponentAt(0)).setComponentPopupMenu(jPopupMenu1);
+        
         carga = new Thread(cargar);
         carga.start();
+        
+        //Asignandole un formato a cargar en el jtexpane
         Nav.setContentType("text/html");
         Nav.setEditable(false);
         Nav.addHyperlinkListener(new HyperlinkListener() {
@@ -80,6 +106,7 @@ public class Navegador extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPopupMenu1 = new javax.swing.JPopupMenu();
         url = new javax.swing.JTextField();
         Atras = new javax.swing.JButton();
         Adelante = new javax.swing.JButton();
@@ -89,12 +116,21 @@ public class Navegador extends javax.swing.JFrame {
         Nav = new javax.swing.JTextPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        mostrarPag = new javax.swing.JMenuItem();
+        mostrarHttp = new javax.swing.JMenuItem();
+        cerrar = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         url.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 urlKeyPressed(evt);
+            }
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                urlKeyReleased(evt);
             }
         });
 
@@ -129,6 +165,39 @@ public class Navegador extends javax.swing.JFrame {
 
         Tab1.addTab("tab2", jScrollPane1);
 
+        jMenu1.setText("File");
+
+        mostrarPag.setText("Mostrar Página");
+        mostrarPag.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mostrarPagActionPerformed(evt);
+            }
+        });
+        jMenu1.add(mostrarPag);
+
+        mostrarHttp.setText("Mostrar HTTP");
+        mostrarHttp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mostrarHttpActionPerformed(evt);
+            }
+        });
+        jMenu1.add(mostrarHttp);
+
+        cerrar.setText("Cerrar");
+        cerrar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cerrarActionPerformed(evt);
+            }
+        });
+        jMenu1.add(cerrar);
+
+        jMenuBar1.add(jMenu1);
+
+        jMenu2.setText("Edit");
+        jMenuBar1.add(jMenu2);
+
+        setJMenuBar(jMenuBar1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -157,19 +226,26 @@ public class Navegador extends javax.swing.JFrame {
                     .addComponent(Adelante)
                     .addComponent(Recargar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 464, Short.MAX_VALUE)
+                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
+boolean crtl=false;
     private void urlKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_urlKeyPressed
 
         int key=evt.getKeyCode();
-    
+        
+        if(key==KeyEvent.VK_CONTROL)
+            crtl=true;
+            
+        
         if(key==KeyEvent.VK_ENTER)
         {
+            if(crtl==true)
+                url.setText(url.getText()+".com");
+            
             cargar.setUrl(url.getText());
             int temp = Historial.size();
             if(temp!=num+1)
@@ -214,6 +290,37 @@ public class Navegador extends javax.swing.JFrame {
         cargar.cargarPag();
         // TODO add your handling code here:
     }//GEN-LAST:event_RecargarMouseReleased
+
+    private void urlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_urlKeyReleased
+
+        int key=evt.getKeyCode();
+        
+        if(key==KeyEvent.VK_CONTROL)
+            crtl=false;
+        // TODO add your handling code here:
+    }//GEN-LAST:event_urlKeyReleased
+
+    private void mostrarPagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mostrarPagActionPerformed
+
+        verPag();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mostrarPagActionPerformed
+
+    private void mostrarHttpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mostrarHttpActionPerformed
+        verHttp();
+        // TODO add your handling code here:
+    }//GEN-LAST:event_mostrarHttpActionPerformed
+
+    private void pestañaClicker(java.awt.event.MouseEvent evt) {                                            
+        Tab1.setSelectedIndex(0);
+        // TODO add your handling code here:
+    } 
+    
+    private void cerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cerrarActionPerformed
+
+        System.exit(0);
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cerrarActionPerformed
 public class Cargar implements Runnable{
         
     boolean correr=false;
@@ -222,9 +329,12 @@ public class Cargar implements Runnable{
         @Override
         public void run() {
             while(true){
+                p1.setIcon(null);
+                
                 try {
                     Thread.sleep(50);
                     if(correr){
+                        p1.setIcon(Directorio+"imagenes/loader.gif");
                         Nav.removeAll();
                         url.setText(Url);
                         Url =Url.replaceAll("http://", "");
@@ -246,25 +356,40 @@ public class Cargar implements Runnable{
                         BufferedReader in = new BufferedReader(new InputStreamReader(conexion.getInputStream()));
                         guardar = in.readLine();
                         continuar=true;
+                        boolean inicio=false;
                         while(continuar){
                             String linea= in.readLine();
                             
+                            //validando hasta donde llega la pagina web
+                            if(linea.toUpperCase().contains("<HTML>")&&!inicio){
+                                inicio=true;                                
+                            }
+                            
                             if(linea!=null)
                                 guardar = guardar+"\n" +linea;
-                            if(linea.toUpperCase().contains("</BODY>"))
-                                continuar=false;
+                            
+                            //verificando si las paginas iniciaban con el tag html
+                            if(inicio){
+                                if(linea.toUpperCase().contains("</HTML>"))
+                                    continuar=false;
+                            }
+                            else
+                                if(linea.toUpperCase().contains("</BODY>"))
+                                    continuar=false;
                         }
+                        
+                        Respuesta=guardar;
                         String[] codigo =guardar.split("<");
-                        String ultimo= guardar.substring(codigo[0].length());
-                        System.out.println(ultimo);
+                        Html = guardar.substring(codigo[0].length());
+                        System.out.println(Html);
                         System.out.println("1");
-                        Nav.setText(ultimo);
+                        
+                        Nav.setContentType("text/html");
+                        Nav.setText(Html);
                         System.out.println("2");
-                        Pestañas p1 = new Pestañas();
-                        Tab1.setTabComponentAt(0, p1);
-                        if(ultimo.toUpperCase().contains("<TITLE>")){
-                            este.setTitle(ultimo.substring(ultimo.toUpperCase().indexOf("<TITLE>")+7, ultimo.toUpperCase().indexOf("</TITLE>")));
-                            p1.setTitle(ultimo.substring(ultimo.toUpperCase().indexOf("<TITLE>")+7, ultimo.toUpperCase().indexOf("</TITLE>")));
+                        if(Html.toUpperCase().contains("<TITLE>")){
+                            este.setTitle(Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>")));
+                            p1.setTitle(Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>")));
                         }
                         else{
                             este.setTitle(Url);
@@ -274,6 +399,7 @@ public class Cargar implements Runnable{
                         if(num!=0)
                             Atras.setEnabled(true);
                     }
+//                    System.out.println(Respuesta);
                 
                 } catch (IOException ex) {
     //                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
@@ -300,6 +426,18 @@ public class Cargar implements Runnable{
         }
 
 }
+
+    public void verPag(){
+        
+        Nav.setContentType("text/html");
+        Nav.setText(Html);
+    }
+    public void verHttp(){
+        
+        Nav.setContentType("");
+        Nav.setText(Respuesta);
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -340,9 +478,16 @@ public class Cargar implements Runnable{
     private javax.swing.JTextPane Nav;
     private javax.swing.JButton Recargar;
     private javax.swing.JTabbedPane Tab1;
+    private javax.swing.JMenuItem cerrar;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextPane jTextPane1;
+    private javax.swing.JMenuItem mostrarHttp;
+    private javax.swing.JMenuItem mostrarPag;
     private javax.swing.JTextField url;
     // End of variables declaration//GEN-END:variables
 }

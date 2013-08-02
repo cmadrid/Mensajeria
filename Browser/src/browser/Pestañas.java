@@ -4,6 +4,7 @@
  */
 package browser;
 
+import java.awt.Insets;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -30,11 +31,22 @@ public class Pestañas extends javax.swing.JPanel {
             Logger.getLogger(Pestañas.class.getName()).log(Level.SEVERE, null, ex);
         }
         cerrar.setBorder(null);
+        cerrar.setMargin(null);
         
     }
     
     public void setTitle(String titulo){
         title.setText(titulo);
+    }
+    public void setIcon(String icon){
+        if(icon==null)
+            icono.setIcon(null);
+        else
+            try {
+                icono.setIcon(new ImageIcon(new URL(icon)));
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(Pestañas.class.getName()).log(Level.SEVERE, null, ex);
+            }
     }
 
     /**
@@ -48,6 +60,7 @@ public class Pestañas extends javax.swing.JPanel {
 
         title = new javax.swing.JLabel();
         cerrar = new javax.swing.JButton();
+        icono = new javax.swing.JLabel();
 
         title.setText("New Tab");
 
@@ -65,15 +78,22 @@ public class Pestañas extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addComponent(icono, javax.swing.GroupLayout.DEFAULT_SIZE, 15, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(title)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+                .addGap(31, 31, 31)
                 .addComponent(cerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(cerrar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(title, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(title, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(icono, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(cerrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -100,6 +120,7 @@ public class Pestañas extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cerrar;
+    private javax.swing.JLabel icono;
     private javax.swing.JLabel title;
     // End of variables declaration//GEN-END:variables
 }
