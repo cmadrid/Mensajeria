@@ -26,9 +26,13 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -45,30 +49,53 @@ public class Navegador extends javax.swing.JFrame {
     ArrayList<String> Historial = new ArrayList<>();
     int num=-1;
     String Directorio;
-    Pestañas p1 = new Pestañas();
     String Html="";
     String Respuesta="";
+    int pestañas=1;
+    ArrayList<JTextPane> texts = new ArrayList();
     /**
      * Creates new form Navegador
      */
     public Navegador() {
         initComponents();
+        texts.add(Nav);
         //directorio dond localizar los recursos
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
         
         //pestaña 1
         
+        Pestañas p1 = new Pestañas();
         p1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
-                pestañaClicker(evt);
+                Tab1.setSelectedIndex(0);
             }
         });
         
         Tab1.setTabComponentAt(0, p1);
         //añadiendo un poopmenu a las pestaña
-        jPopupMenu1.add(mostrarPag);
-        jPopupMenu1.add(mostrarHttp);
+        
+        //creando y añadiendo los popmenu a las pestañas
+       JMenuItem menu = new JMenuItem("Mostrar Página");
+       menu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verPag(0);
+            }
+        });
+       
+       JMenuItem menu1 = new JMenuItem("Mostrar HTTP");
+       menu1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verHttp(0);
+            }
+        });
+       
+       
+       
+        jPopupMenu1.add(menu);
+        jPopupMenu1.add(menu1);
+//        jPopupMenu1.add(mostrarPag);
+//        jPopupMenu1.add(mostrarHttp);
         ((JComponent)Tab1.getTabComponentAt(0)).setComponentPopupMenu(jPopupMenu1);
         
         carga = new Thread(cargar);
@@ -118,8 +145,6 @@ public class Navegador extends javax.swing.JFrame {
         jTextPane1 = new javax.swing.JTextPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        mostrarPag = new javax.swing.JMenuItem();
-        mostrarHttp = new javax.swing.JMenuItem();
         cerrar = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
@@ -157,31 +182,21 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
+        Tab1.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                Tab1StateChanged(evt);
+            }
+        });
+
         jScrollPane2.setViewportView(Nav);
 
         Tab1.addTab("tab1", jScrollPane2);
 
         jScrollPane1.setViewportView(jTextPane1);
 
-        Tab1.addTab("tab2", jScrollPane1);
+        Tab1.addTab("+", jScrollPane1);
 
         jMenu1.setText("File");
-
-        mostrarPag.setText("Mostrar Página");
-        mostrarPag.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mostrarPagActionPerformed(evt);
-            }
-        });
-        jMenu1.add(mostrarPag);
-
-        mostrarHttp.setText("Mostrar HTTP");
-        mostrarHttp.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mostrarHttpActionPerformed(evt);
-            }
-        });
-        jMenu1.add(mostrarHttp);
 
         cerrar.setText("Cerrar");
         cerrar.addActionListener(new java.awt.event.ActionListener() {
@@ -300,42 +315,81 @@ boolean crtl=false;
         // TODO add your handling code here:
     }//GEN-LAST:event_urlKeyReleased
 
-    private void mostrarPagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mostrarPagActionPerformed
-
-        verPag();
-        // TODO add your handling code here:
-    }//GEN-LAST:event_mostrarPagActionPerformed
-
-    private void mostrarHttpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mostrarHttpActionPerformed
-        verHttp();
-        // TODO add your handling code here:
-    }//GEN-LAST:event_mostrarHttpActionPerformed
-
-    private void pestañaClicker(java.awt.event.MouseEvent evt) {                                            
-        Tab1.setSelectedIndex(0);
-        // TODO add your handling code here:
-    } 
     
     private void cerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cerrarActionPerformed
 
         System.exit(0);
         // TODO add your handling code here:
     }//GEN-LAST:event_cerrarActionPerformed
+
+    private void Tab1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_Tab1StateChanged
+        
+        if(Tab1.getSelectedIndex()==pestañas){
+            final int seleccion=Tab1.getSelectedIndex();
+             JMenuItem menu = new JMenuItem("Mostrar Página");
+            menu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verPag(seleccion);
+            }
+             });
+            
+             JMenuItem menu1 = new JMenuItem("Mostrar HTTP");
+            menu1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verHttp(seleccion);
+            }
+            });
+            
+            JPopupMenu pop = new JPopupMenu();
+            pop.add(menu);
+            pop.add(menu1);
+            
+            
+            
+            JTextPane n =new JTextPane();
+            n.setContentType("text/html");
+            n.setEditable(false);
+            JScrollPane sc = new JScrollPane();
+            sc.setViewportView(n);
+            Tab1.add(sc, pestañas);
+            texts.add(n);
+            Pestañas nueva = new Pestañas();
+            
+            nueva.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                Tab1.setSelectedIndex(seleccion);
+            }
+            });
+            
+            
+            nueva.setComponentPopupMenu(pop);
+            
+            
+            
+            
+            Tab1.setTabComponentAt(pestañas, nueva);
+            pestañas++;
+            Tab1.setSelectedIndex(pestañas-1);
+            
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Tab1StateChanged
 public class Cargar implements Runnable{
         
     boolean correr=false;
     boolean continuar=true;
     String Url="";
+    int seleccionado=0;
         @Override
         public void run() {
             while(true){
-                p1.setIcon(null);
-                
+                ((Pestañas)Tab1.getTabComponentAt(seleccionado)).setIcon(null);
                 try {
                     Thread.sleep(50);
                     if(correr){
-                        p1.setIcon(Directorio+"imagenes/loader.gif");
-                        Nav.removeAll();
+                        seleccionado=Tab1.getSelectedIndex();
+                        ((Pestañas)Tab1.getTabComponentAt(seleccionado)).setIcon(Directorio+"imagenes/loader.gif");
+                        texts.get(seleccionado).removeAll();
                         url.setText(Url);
                         Url =Url.replaceAll("http://", "");
                         if(!Url.contains("/"))
@@ -361,7 +415,7 @@ public class Cargar implements Runnable{
                             String linea= in.readLine();
                             
                             //validando hasta donde llega la pagina web
-                            if(linea.toUpperCase().contains("<HTML>")&&!inicio){
+                            if(linea.toUpperCase().contains("<HTML")&&!inicio){
                                 inicio=true;                                
                             }
                             
@@ -384,16 +438,18 @@ public class Cargar implements Runnable{
                         System.out.println(Html);
                         System.out.println("1");
                         
-                        Nav.setContentType("text/html");
-                        Nav.setText(Html);
+                        texts.get(seleccionado).setContentType("text/html");
+                        texts.get(seleccionado).setText(Html);
+                        System.out.println(texts.get(pestañas-1));
                         System.out.println("2");
                         if(Html.toUpperCase().contains("<TITLE>")){
                             este.setTitle(Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>")));
-                            p1.setTitle(Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>")));
+//                            p1.setTitle(Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>")));
+                            ((Pestañas)Tab1.getTabComponentAt(seleccionado)).setTitle(Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>")));
                         }
                         else{
                             este.setTitle(Url);
-                            p1.setTitle(Url);
+                            ((Pestañas)Tab1.getTabComponentAt(seleccionado)).setTitle(Url);
                         }
                         correr=false;
                         if(num!=0)
@@ -403,12 +459,12 @@ public class Cargar implements Runnable{
                 
                 } catch (IOException ex) {
     //                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
-                    Nav.setText("<h>Error: Pagina no encontrada</h>");
+                    texts.get(seleccionado).setText("<h>Error: Pagina no encontrada</h>");
                     correr=false;
                 } catch (InterruptedException ex) {
                 Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
                 }catch(Exception e){
-                    Nav.setText("<h>Error: Pagina no encontrada</h>");
+                    texts.get(seleccionado).setText("<h>Error: Pagina no encontrada</h>");
                     correr=false;
                 }
             
@@ -427,15 +483,15 @@ public class Cargar implements Runnable{
 
 }
 
-    public void verPag(){
+    public void verPag(int seleccion){
         
-        Nav.setContentType("text/html");
-        Nav.setText(Html);
+        texts.get(seleccion).setContentType("text/html");
+        texts.get(seleccion).setText(Html);
     }
-    public void verHttp(){
+    public void verHttp(int seleccion){
         
-        Nav.setContentType("");
-        Nav.setText(Respuesta);
+        texts.get(seleccion).setContentType("");
+        texts.get(seleccion).setText(Respuesta);
     }
 
     /**
@@ -486,8 +542,6 @@ public class Cargar implements Runnable{
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextPane jTextPane1;
-    private javax.swing.JMenuItem mostrarHttp;
-    private javax.swing.JMenuItem mostrarPag;
     private javax.swing.JTextField url;
     // End of variables declaration//GEN-END:variables
 }
