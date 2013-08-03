@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 
 /**
  *
@@ -17,9 +18,16 @@ import javax.swing.ImageIcon;
  */
 public class Pestañas extends javax.swing.JPanel {
     String Directorio;
+    int index;
     /**
      * Creates new form Pestañas
      */
+    public void setIndex(int index){
+        this.index=index;
+    }
+    public int getIndex(){
+        return index;
+    }
     public Pestañas() {
         initComponents();
         Directorio=getClass().getResource("").toExternalForm();
@@ -97,6 +105,10 @@ public class Pestañas extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    public JButton getCerrar(){
+        return cerrar;
+    }
+    
     private void cerrarMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cerrarMouseEntered
 
 

@@ -66,27 +66,20 @@ public class Navegador extends javax.swing.JFrame {
         //pestaña 1
         
         Pestañas p1 = new Pestañas();
-        p1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                Tab1.setSelectedIndex(0);
-            }
-        });
-        
         Tab1.setTabComponentAt(0, p1);
-        //añadiendo un poopmenu a las pestaña
         
         //creando y añadiendo los popmenu a las pestañas
        JMenuItem menu = new JMenuItem("Mostrar Página");
        menu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verPag(0);
+                verPag();
             }
         });
        
        JMenuItem menu1 = new JMenuItem("Mostrar HTTP");
        menu1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verHttp(0);
+                verHttp();
             }
         });
        
@@ -94,9 +87,7 @@ public class Navegador extends javax.swing.JFrame {
        
         jPopupMenu1.add(menu);
         jPopupMenu1.add(menu1);
-//        jPopupMenu1.add(mostrarPag);
-//        jPopupMenu1.add(mostrarHttp);
-        ((JComponent)Tab1.getTabComponentAt(0)).setComponentPopupMenu(jPopupMenu1);
+        Tab1.setComponentPopupMenu(jPopupMenu1);
         
         carga = new Thread(cargar);
         carga.start();
@@ -325,47 +316,53 @@ boolean crtl=false;
     private void Tab1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_Tab1StateChanged
         
         if(Tab1.getSelectedIndex()==pestañas){
-            final int seleccion=Tab1.getSelectedIndex();
-             JMenuItem menu = new JMenuItem("Mostrar Página");
-            menu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verPag(seleccion);
-            }
-             });
-            
-             JMenuItem menu1 = new JMenuItem("Mostrar HTTP");
-            menu1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                verHttp(seleccion);
-            }
-            });
-            
-            JPopupMenu pop = new JPopupMenu();
-            pop.add(menu);
-            pop.add(menu1);
-            
             
             
             JTextPane n =new JTextPane();
             n.setContentType("text/html");
             n.setEditable(false);
+            
+            //añadiendo leer links en todas las pestañas
+            n.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+        //           JOptionPane.showMessageDialog( null, e.getURL().toString());
+                   cargar.setUrl(e.getURL().toExternalForm());
+                   int temp = Historial.size();
+                    if(temp!=num+1)
+                        for(int i=num+1;i<temp;i++)
+                            Historial.remove(i);
+                   Historial.add(e.getURL().toExternalForm());
+                   num++;
+                   cargar.cargarPag();
+                   Adelante.setEnabled(false);
+
+
+                }
+            }
+        });
             JScrollPane sc = new JScrollPane();
             sc.setViewportView(n);
             Tab1.add(sc, pestañas);
             texts.add(n);
-            Pestañas nueva = new Pestañas();
+            final Pestañas nueva = new Pestañas();
+            nueva.setIndex(pestañas);
             
-            nueva.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                Tab1.setSelectedIndex(seleccion);
+            //evento para cerrar pestañas
+            nueva.getCerrar().addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                System.out.println(Tab1.getSelectedIndex());
+                System.out.println(this);
+                int index=nueva.getIndex();
+                Tab1.remove(index);
+                texts.remove(index);
+                pestañas--;
+                for(int i = index;i<pestañas;i++)
+                    ((Pestañas)Tab1.getTabComponentAt(i)).setIndex(i);
+                
             }
-            });
-            
-            
-            nueva.setComponentPopupMenu(pop);
-            
-            
-            
+             });
+          
             
             Tab1.setTabComponentAt(pestañas, nueva);
             pestañas++;
@@ -428,7 +425,7 @@ public class Cargar implements Runnable{
                                     continuar=false;
                             }
                             else
-                                if(linea.toUpperCase().contains("</BODY>"))
+                                if(linea.toUpperCase().contains("</BODY>")||linea==null)
                                     continuar=false;
                         }
                         
@@ -483,15 +480,15 @@ public class Cargar implements Runnable{
 
 }
 
-    public void verPag(int seleccion){
+    public void verPag(){
         
-        texts.get(seleccion).setContentType("text/html");
-        texts.get(seleccion).setText(Html);
+        texts.get(Tab1.getSelectedIndex()).setContentType("text/html");
+        texts.get(Tab1.getSelectedIndex()).setText(Html);
     }
-    public void verHttp(int seleccion){
+    public void verHttp(){
         
-        texts.get(seleccion).setContentType("");
-        texts.get(seleccion).setText(Respuesta);
+        texts.get(Tab1.getSelectedIndex()).setContentType("");
+        texts.get(Tab1.getSelectedIndex()).setText(Respuesta);
     }
 
     /**
