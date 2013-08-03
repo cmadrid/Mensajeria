@@ -15,6 +15,14 @@
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
           <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Definir pagina de Inicio"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem1ActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="cerrar">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Cerrar"/>
@@ -67,7 +75,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="Recargar" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="url" pref="827" max="32767" attributes="0"/>
+                      <Component id="Home" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="url" pref="900" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -78,14 +88,17 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="url" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Atras" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Adelante" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="Recargar" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                  <Component id="Adelante" alignment="0" max="32767" attributes="0"/>
+                  <Component id="Recargar" alignment="1" max="32767" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="url" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="Atras" min="-2" max="-2" attributes="0"/>
+                      <Component id="Home" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="Tab1" pref="443" max="32767" attributes="0"/>
+              <Component id="Tab1" pref="446" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -100,7 +113,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="Atras">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Atras"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
@@ -109,7 +121,6 @@
     </Component>
     <Component class="javax.swing.JButton" name="Adelante">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Adelante"/>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
@@ -117,9 +128,6 @@
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="Recargar">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Recargar"/>
-      </Properties>
       <Events>
         <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="RecargarMouseReleased"/>
       </Events>
@@ -131,24 +139,6 @@
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
       <SubComponents>
-        <Container class="javax.swing.JScrollPane" name="jScrollPane2">
-          <AuxValues>
-            <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
-          </AuxValues>
-          <Constraints>
-            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
-              <JTabbedPaneConstraints tabName="tab1">
-                <Property name="tabTitle" type="java.lang.String" value="tab1"/>
-              </JTabbedPaneConstraints>
-            </Constraint>
-          </Constraints>
-
-          <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
-          <SubComponents>
-            <Component class="javax.swing.JTextPane" name="Nav">
-            </Component>
-          </SubComponents>
-        </Container>
         <Container class="javax.swing.JScrollPane" name="jScrollPane1">
           <AuxValues>
             <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -169,5 +159,10 @@
         </Container>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="Home">
+      <Events>
+        <EventHandler event="mouseReleased" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="HomeMouseReleased"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

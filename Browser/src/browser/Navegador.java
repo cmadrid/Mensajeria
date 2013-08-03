@@ -8,9 +8,16 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -61,6 +68,7 @@ public class Navegador extends javax.swing.JFrame {
     String Respuesta="";
     int pestañas=0;
     ArrayList<JTextPane> texts = new ArrayList();
+    String home="";
     /**
      * Creates new form Navegador
      */
@@ -69,13 +77,59 @@ public class Navegador extends javax.swing.JFrame {
         //directorio dond localizar los recursos
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
+        
+        
+        File homepag=new File("home.cm");
+        try {
+            //verificando si ya esxiste el archivo... de no ser asi lo crea
+            if(!homepag.exists()){
+                System.out.println(homepag);
+                FileWriter fw = new FileWriter(homepag);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write("http://www.cs.bham.ac.uk/~tpc/testpages/");
+                bw.close();
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "error :"+e.getMessage());
+        }
+        
+        //lectura del archivo de configuraciones.
+        try {
+            FileReader fr = new FileReader(homepag);
+            BufferedReader buff = new BufferedReader(fr);
+            home=buff.readLine();
+            buff.close();
+            fr.close();
+        } catch (Exception ex) {
+         
+            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
+        }
+        
+        
+        
+ //*************************************************************************************************************
+        //leer archivos dentro del .jar: leer la informacion de home
+//        try {
+//            InputStream in = Navegador.class.getClassLoader().getResourceAsStream("archivos/home.cm");
+//            BufferedReader buff = new BufferedReader(new InputStreamReader(in));
+//            home=buff.readLine();
+//        } catch (Exception ex) {
+//         
+//            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
+//        }
+        
+   //******************************************************************************************************************     
+        
+        //Añadiendo iconos a los botones
         ImageIcon atras=new ImageIcon();
         ImageIcon adelante=new ImageIcon();
         ImageIcon recargar=new ImageIcon();
+        ImageIcon home=new ImageIcon();
         try {
             atras = new ImageIcon(new URL(Directorio+"imagenes/izquierda.png"));
             adelante = new ImageIcon(new URL(Directorio+"imagenes/derecha.png"));
             recargar = new ImageIcon(new URL(Directorio+"imagenes/actualizar.png"));
+            home = new ImageIcon(new URL(Directorio+"imagenes/home.png"));
         } catch (MalformedURLException ex) {
             Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -83,8 +137,10 @@ public class Navegador extends javax.swing.JFrame {
         Atras.setIcon(icono);
         icono = new ImageIcon(adelante.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
         Adelante.setIcon(icono);
-        icono = new ImageIcon(recargar.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
+        icono = new ImageIcon(recargar.getImage().getScaledInstance(23, 23, Image.SCALE_DEFAULT));
         Recargar.setIcon(icono);
+        icono = new ImageIcon(home.getImage().getScaledInstance(23, 23, Image.SCALE_DEFAULT));
+        Home.setIcon(icono);
        
         //creando y añadiendo los popmenu a las pestañas
        JMenuItem menu = new JMenuItem("Mostrar Página");
@@ -127,8 +183,10 @@ public class Navegador extends javax.swing.JFrame {
         Tab1 = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
+        Home = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem1 = new javax.swing.JMenuItem();
         cerrar = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
 
@@ -173,7 +231,21 @@ public class Navegador extends javax.swing.JFrame {
 
         Tab1.addTab("+", jScrollPane1);
 
+        Home.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                HomeMouseReleased(evt);
+            }
+        });
+
         jMenu1.setText("File");
+
+        jMenuItem1.setText("Definir pagina de Inicio");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
 
         cerrar.setText("Cerrar");
         cerrar.addActionListener(new java.awt.event.ActionListener() {
@@ -199,24 +271,28 @@ public class Navegador extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Tab1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Atras, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Atras)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Adelante)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Recargar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)))
+                        .addComponent(Home)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE, false)
-                    .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(Adelante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Recargar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Atras))
+                    .addComponent(Recargar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Atras)
+                        .addComponent(Home)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
                 .addContainerGap())
@@ -310,12 +386,53 @@ boolean crtl=false;
         else
             if(pestañas>1)
             {
-               actualizarBtns();
+                actualizarBtns();
+                if(nums.get(Tab1.getSelectedIndex())==-1)
+                    url.setText("");
+                else
+                    url.setText(Historiales.get(Tab1.getSelectedIndex()).get(nums.get(Tab1.getSelectedIndex())));
             }
         
         
         // TODO add your handling code here:
     }//GEN-LAST:event_Tab1StateChanged
+
+    private void HomeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_HomeMouseReleased
+
+//        if(nums.get(Tab1.getSelectedIndex())>1)
+//            Atras.setEnabled(true);
+        if(!cargar.correr){
+            int temp = Historiales.get(Tab1.getSelectedIndex()).size();
+            if(temp!=nums.get(Tab1.getSelectedIndex())+1)
+                for(int i=nums.get(Tab1.getSelectedIndex())+1;i<temp;i++)
+                    Historiales.get(Tab1.getSelectedIndex()).remove(i);
+           Historiales.get(Tab1.getSelectedIndex()).add(home);
+           nums.set(Tab1.getSelectedIndex(),nums.get(Tab1.getSelectedIndex())+1);        
+            System.out.println(home);
+            cargar.setUrl(home);
+            cargar.cargarPag();
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_HomeMouseReleased
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+
+        home=Historiales.get(Tab1.getSelectedIndex()).get(nums.get(Tab1.getSelectedIndex()));
+        File homepag=new File("home.cm");
+        try {
+            //Escribiendo la nueva pagina de inicio.
+             System.out.println(homepag);
+                FileWriter fw = new FileWriter(homepag);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write(home);
+                bw.close();
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "error :"+e.getMessage());
+        }
+        
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     public void actualizarBtns(){
         if(nums.get(Tab1.getSelectedIndex())>0)
@@ -346,7 +463,7 @@ boolean crtl=false;
             n.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-        //           JOptionPane.showMessageDialog( null, e.getURL().toString());
+          //         JOptionPane.showMessageDialog( null, e.getURL().toString());
                    cargar.setUrl(e.getURL().toExternalForm());
                    int temp = Historiales.get(Tab1.getSelectedIndex()).size();
                     if(temp!=nums.get(Tab1.getSelectedIndex())+1)
@@ -385,6 +502,13 @@ boolean crtl=false;
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 //Validacion para que siempre quede almenos una pestaña
                 if(pestañas>1){
+                    
+                    
+                    //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
+                    if(Tab1.getSelectedIndex()==pestañas-1)
+                        Tab1.setSelectedIndex(pestañas-2);
+                    
+                    
                     //recuperando el indice del tab en el que se encuentra ese componente y con el elimino de los arreglos y asigno nuevo 
                     //valores de indice a los componentes restantes posteriores
                     int index=nueva.getIndex();
@@ -402,9 +526,7 @@ boolean crtl=false;
                     
                     actualizarBtns();
                     
-                    //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
-                    if(Tab1.getSelectedIndex()==pestañas)
-                        Tab1.setSelectedIndex(pestañas-1);
+                    
                 }
                 
             }
@@ -526,6 +648,7 @@ boolean crtl=false;
             
             correr=true;
         }
+        
         public void setUrl(String url){
             Url=url;
         }
@@ -580,12 +703,14 @@ boolean crtl=false;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Adelante;
     private javax.swing.JButton Atras;
+    private javax.swing.JButton Home;
     private javax.swing.JButton Recargar;
     private javax.swing.JTabbedPane Tab1;
     private javax.swing.JMenuItem cerrar;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;
