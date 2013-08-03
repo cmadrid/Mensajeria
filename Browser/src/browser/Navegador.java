@@ -5,6 +5,7 @@
 package browser;
 
 import java.awt.Component;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -15,13 +16,17 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -47,8 +52,10 @@ public class Navegador extends javax.swing.JFrame {
     Cargar cargar = new Cargar();
     Thread carga;
     JFrame este = this;
-    ArrayList<String> Historial = new ArrayList<>();
-    int num=-1;
+//    ArrayList<String> Historial = new ArrayList<>();
+    ArrayList<ArrayList<String>> Historiales= new ArrayList<>();
+    ArrayList<Integer>nums=new ArrayList<>();
+//    int num=-1;
     String Directorio;
     String Html="";
     String Respuesta="";
@@ -62,7 +69,22 @@ public class Navegador extends javax.swing.JFrame {
         //directorio dond localizar los recursos
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
-        
+        ImageIcon atras=new ImageIcon();
+        ImageIcon adelante=new ImageIcon();
+        ImageIcon recargar=new ImageIcon();
+        try {
+            atras = new ImageIcon(new URL(Directorio+"imagenes/izquierda.png"));
+            adelante = new ImageIcon(new URL(Directorio+"imagenes/derecha.png"));
+            recargar = new ImageIcon(new URL(Directorio+"imagenes/actualizar.png"));
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        Icon icono = new ImageIcon(atras.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
+        Atras.setIcon(icono);
+        icono = new ImageIcon(adelante.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
+        Adelante.setIcon(icono);
+        icono = new ImageIcon(recargar.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
+        Recargar.setIcon(icono);
        
         //creando y añadiendo los popmenu a las pestañas
        JMenuItem menu = new JMenuItem("Mostrar Página");
@@ -121,7 +143,6 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
-        Atras.setText("Atras");
         Atras.setEnabled(false);
         Atras.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -129,7 +150,6 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
-        Adelante.setText("Adelante");
         Adelante.setEnabled(false);
         Adelante.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
@@ -137,7 +157,6 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
-        Recargar.setText("Recargar");
         Recargar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 RecargarMouseReleased(evt);
@@ -180,26 +199,26 @@ public class Navegador extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(Tab1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Atras)
+                        .addComponent(Atras, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Adelante)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Recargar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 827, Short.MAX_VALUE)))
+                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 913, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE, false)
                     .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(Atras)
-                    .addComponent(Adelante)
-                    .addComponent(Recargar))
+                    .addComponent(Adelante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Recargar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Atras))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -220,12 +239,12 @@ boolean crtl=false;
                 url.setText(url.getText()+".com");
             
             cargar.setUrl(url.getText());
-            int temp = Historial.size();
-            if(temp!=num+1)
-                for(int i=num+1;i<temp;i++)
-                    Historial.remove(i);
-           Historial.add(url.getText());
-           num++;
+            int temp = Historiales.get(Tab1.getSelectedIndex()).size();
+            if(temp!=nums.get(Tab1.getSelectedIndex())+1)
+                for(int i=nums.get(Tab1.getSelectedIndex())+1;i<temp;i++)
+                    Historiales.get(Tab1.getSelectedIndex()).remove(i);
+           Historiales.get(Tab1.getSelectedIndex()).add(url.getText());
+           nums.set(Tab1.getSelectedIndex(),nums.get(Tab1.getSelectedIndex())+1);
             cargar.cargarPag();
             Adelante.setEnabled(false);
         
@@ -234,25 +253,25 @@ boolean crtl=false;
     }//GEN-LAST:event_urlKeyPressed
 
     private void AtrasMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AtrasMouseReleased
-        if(Atras.isEnabled()){
-            num--;
-            cargar.setUrl(Historial.get(num));
+        if(Atras.isEnabled()&&!cargar.correr){
+            nums.set(Tab1.getSelectedIndex(),nums.get(Tab1.getSelectedIndex())-1);
+            cargar.setUrl(Historiales.get(Tab1.getSelectedIndex()).get(nums.get(Tab1.getSelectedIndex())));
     //        if(Historial.size()!=num+1)
     //            System.out.println("ohlasdasd");
             cargar.cargarPag();
             Adelante.setEnabled(true);
-            if(num==0)
+            if(nums.get(Tab1.getSelectedIndex())==0)
                 Atras.setEnabled(false);
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_AtrasMouseReleased
 
     private void AdelanteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdelanteMouseReleased
-        if(Adelante.isEnabled()){
-            cargar.setUrl(Historial.get(num+1));
-            num++;
+        if(Adelante.isEnabled()&&!cargar.correr){
+            cargar.setUrl(Historiales.get(Tab1.getSelectedIndex()).get(nums.get(Tab1.getSelectedIndex())+1));
+            nums.set(Tab1.getSelectedIndex(),nums.get(Tab1.getSelectedIndex())+1);
             cargar.cargarPag();
-            if(Historial.size()==num+1)
+            if(Historiales.get(Tab1.getSelectedIndex()).size()==nums.get(Tab1.getSelectedIndex())+1)
                 Adelante.setEnabled(false);
         }
         // TODO add your handling code here:
@@ -283,13 +302,40 @@ boolean crtl=false;
     private void Tab1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_Tab1StateChanged
         
         if(Tab1.getSelectedIndex()==pestañas){
+            Tab1.setSelectedIndex(pestañas-1);
             
             crearPestaña();
+            
         }
+        else
+            if(pestañas>1)
+            {
+               actualizarBtns();
+            }
+        
+        
         // TODO add your handling code here:
     }//GEN-LAST:event_Tab1StateChanged
 
+    public void actualizarBtns(){
+        if(nums.get(Tab1.getSelectedIndex())>0)
+            Atras.setEnabled(true);
+        else
+            Atras.setEnabled(false);
+
+        if(nums.get(Tab1.getSelectedIndex())<Historiales.get(Tab1.getSelectedIndex()).size()-1)
+            Adelante.setEnabled(true);
+        else
+            Adelante.setEnabled(false);
+    }
+    
     public void crearPestaña(){
+        
+            //Agregando historiales para cada uno de las pestañas
+            ArrayList<String> Historial = new ArrayList<>();
+            Historiales.add(Historial);
+            int num=-1;
+            nums.add(num);
     
             //creo el nuevo jTextPane que se asignara a mi nueva pestaña
             JTextPane n =new JTextPane();
@@ -302,12 +348,12 @@ boolean crtl=false;
                 if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
         //           JOptionPane.showMessageDialog( null, e.getURL().toString());
                    cargar.setUrl(e.getURL().toExternalForm());
-                   int temp = Historial.size();
-                    if(temp!=num+1)
-                        for(int i=num+1;i<temp;i++)
-                            Historial.remove(i);
-                   Historial.add(e.getURL().toExternalForm());
-                   num++;
+                   int temp = Historiales.get(Tab1.getSelectedIndex()).size();
+                    if(temp!=nums.get(Tab1.getSelectedIndex())+1)
+                        for(int i=nums.get(Tab1.getSelectedIndex())+1;i<temp;i++)
+                            Historiales.get(Tab1.getSelectedIndex()).remove(i);
+                   Historiales.get(Tab1.getSelectedIndex()).add(e.getURL().toExternalForm());
+                   nums.set(Tab1.getSelectedIndex(),nums.get(Tab1.getSelectedIndex())+1);
                    cargar.cargarPag();
                    Adelante.setEnabled(false);
 
@@ -320,15 +366,20 @@ boolean crtl=false;
             JScrollPane sc = new JScrollPane();
             //Añadiendo el JTextPane al JScrollPane
             sc.setViewportView(n);
+        System.out.println(pestañas);
             //Añadiendo el JTextPane al tab
             Tab1.add(sc, pestañas);
+       
             //almacenando los textpane en un arreglo para luego poder editarlos ordenadamente
             texts.add(n);
             
-            //llamada a mi componente Pestañay añadiendole el index del tab al que estará asignado
+            //llamada a mi componente Pestaña y añadiendole el index del tab al que estará asignado
             final Pestañas nueva = new Pestañas();
             nueva.setIndex(pestañas);
             
+            
+            
+      //**************************************************************************************************************      
             //evento para cerrar pestañas
             nueva.getCerrar().addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -343,6 +394,14 @@ boolean crtl=false;
                     for(int i = index;i<pestañas;i++)
                         ((Pestañas)Tab1.getTabComponentAt(i)).setIndex(i);
                     
+                    
+                    //eliminando arreglos de los historiales
+                    Historiales.remove(index);
+                    nums.remove(index);
+                    
+                    
+                    actualizarBtns();
+                    
                     //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
                     if(Tab1.getSelectedIndex()==pestañas)
                         Tab1.setSelectedIndex(pestañas-1);
@@ -350,6 +409,10 @@ boolean crtl=false;
                 
             }
              });
+            
+            
+        //*********************************************************************************************************************    
+            
           
             //añado el componente Pestaña al tab recien creado, aumento el numero de tabs y selecciono el final.
             Tab1.setTabComponentAt(pestañas, nueva);
@@ -437,9 +500,9 @@ boolean crtl=false;
                             este.setTitle(Url);
                             ((Pestañas)Tab1.getTabComponentAt(seleccionado)).setTitle(Url);
                         }
-                        correr=false;
-                        if(num!=0)
+                        if(nums.get(Tab1.getSelectedIndex())!=0)
                             Atras.setEnabled(true);
+                        correr=false;
                     }
 //                    System.out.println(Respuesta);
                 
