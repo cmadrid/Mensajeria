@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
@@ -51,23 +52,18 @@ public class Navegador extends javax.swing.JFrame {
     String Directorio;
     String Html="";
     String Respuesta="";
-    int pestañas=1;
+    int pestañas=0;
     ArrayList<JTextPane> texts = new ArrayList();
     /**
      * Creates new form Navegador
      */
     public Navegador() {
         initComponents();
-        texts.add(Nav);
         //directorio dond localizar los recursos
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
         
-        //pestaña 1
-        
-        Pestañas p1 = new Pestañas();
-        Tab1.setTabComponentAt(0, p1);
-        
+       
         //creando y añadiendo los popmenu a las pestañas
        JMenuItem menu = new JMenuItem("Mostrar Página");
        menu.addActionListener(new java.awt.event.ActionListener() {
@@ -75,44 +71,21 @@ public class Navegador extends javax.swing.JFrame {
                 verPag();
             }
         });
-       
        JMenuItem menu1 = new JMenuItem("Mostrar HTTP");
        menu1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 verHttp();
             }
         });
-       
-       
-       
         jPopupMenu1.add(menu);
         jPopupMenu1.add(menu1);
         Tab1.setComponentPopupMenu(jPopupMenu1);
         
+        //iniciando hilo de cargar las paginas
         carga = new Thread(cargar);
         carga.start();
         
-        //Asignandole un formato a cargar en el jtexpane
-        Nav.setContentType("text/html");
-        Nav.setEditable(false);
-        Nav.addHyperlinkListener(new HyperlinkListener() {
-    public void hyperlinkUpdate(HyperlinkEvent e) {
-        if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-//           JOptionPane.showMessageDialog( null, e.getURL().toString());
-           cargar.setUrl(e.getURL().toExternalForm());
-           int temp = Historial.size();
-            if(temp!=num+1)
-                for(int i=num+1;i<temp;i++)
-                    Historial.remove(i);
-           Historial.add(e.getURL().toExternalForm());
-           num++;
-           cargar.cargarPag();
-           Adelante.setEnabled(false);
-           
-           
-        }
-    }
-});
+
     }
 
     /**
@@ -130,8 +103,6 @@ public class Navegador extends javax.swing.JFrame {
         Adelante = new javax.swing.JButton();
         Recargar = new javax.swing.JButton();
         Tab1 = new javax.swing.JTabbedPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        Nav = new javax.swing.JTextPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -142,11 +113,11 @@ public class Navegador extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         url.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                urlKeyPressed(evt);
-            }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 urlKeyReleased(evt);
+            }
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                urlKeyPressed(evt);
             }
         });
 
@@ -178,10 +149,6 @@ public class Navegador extends javax.swing.JFrame {
                 Tab1StateChanged(evt);
             }
         });
-
-        jScrollPane2.setViewportView(Nav);
-
-        Tab1.addTab("tab1", jScrollPane2);
 
         jScrollPane1.setViewportView(jTextPane1);
 
@@ -317,7 +284,14 @@ boolean crtl=false;
         
         if(Tab1.getSelectedIndex()==pestañas){
             
-            
+            crearPestaña();
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Tab1StateChanged
+
+    public void crearPestaña(){
+    
+            //creo el nuevo jTextPane que se asignara a mi nueva pestaña
             JTextPane n =new JTextPane();
             n.setContentType("text/html");
             n.setEditable(false);
@@ -341,37 +315,52 @@ boolean crtl=false;
                 }
             }
         });
+            
+            //creando JScrollPane dond voy a meter a mi JTextPane
             JScrollPane sc = new JScrollPane();
+            //Añadiendo el JTextPane al JScrollPane
             sc.setViewportView(n);
+            //Añadiendo el JTextPane al tab
             Tab1.add(sc, pestañas);
+            //almacenando los textpane en un arreglo para luego poder editarlos ordenadamente
             texts.add(n);
+            
+            //llamada a mi componente Pestañay añadiendole el index del tab al que estará asignado
             final Pestañas nueva = new Pestañas();
             nueva.setIndex(pestañas);
             
             //evento para cerrar pestañas
             nueva.getCerrar().addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                System.out.println(Tab1.getSelectedIndex());
-                System.out.println(this);
-                int index=nueva.getIndex();
-                Tab1.remove(index);
-                texts.remove(index);
-                pestañas--;
-                for(int i = index;i<pestañas;i++)
-                    ((Pestañas)Tab1.getTabComponentAt(i)).setIndex(i);
+                //Validacion para que siempre quede almenos una pestaña
+                if(pestañas>1){
+                    //recuperando el indice del tab en el que se encuentra ese componente y con el elimino de los arreglos y asigno nuevo 
+                    //valores de indice a los componentes restantes posteriores
+                    int index=nueva.getIndex();
+                    Tab1.remove(index);
+                    texts.remove(index);
+                    pestañas--;
+                    for(int i = index;i<pestañas;i++)
+                        ((Pestañas)Tab1.getTabComponentAt(i)).setIndex(i);
+                    
+                    //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
+                    if(Tab1.getSelectedIndex()==pestañas)
+                        Tab1.setSelectedIndex(pestañas-1);
+                }
                 
             }
              });
           
-            
+            //añado el componente Pestaña al tab recien creado, aumento el numero de tabs y selecciono el final.
             Tab1.setTabComponentAt(pestañas, nueva);
             pestañas++;
             Tab1.setSelectedIndex(pestañas-1);
             
-        }
-        // TODO add your handling code here:
-    }//GEN-LAST:event_Tab1StateChanged
-public class Cargar implements Runnable{
+        
+    }
+    
+    
+    public class Cargar implements Runnable{
         
     boolean correr=false;
     boolean continuar=true;
@@ -528,7 +517,6 @@ public class Cargar implements Runnable{
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Adelante;
     private javax.swing.JButton Atras;
-    private javax.swing.JTextPane Nav;
     private javax.swing.JButton Recargar;
     private javax.swing.JTabbedPane Tab1;
     private javax.swing.JMenuItem cerrar;
@@ -537,7 +525,6 @@ public class Cargar implements Runnable{
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JTextField url;
     // End of variables declaration//GEN-END:variables
