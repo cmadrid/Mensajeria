@@ -4,7 +4,9 @@
  */
 package browser;
 
+import java.awt.Button;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
@@ -64,6 +66,8 @@ public class Navegador extends javax.swing.JFrame {
     ArrayList<Integer>nums=new ArrayList<>();
 //    int num=-1;
     String Directorio;
+    ArrayList<String> Htmls = new ArrayList<>();
+    ArrayList<String> Https = new ArrayList<>();
     String Html="";
     String Respuesta="";
     int pestañas=0;
@@ -74,37 +78,16 @@ public class Navegador extends javax.swing.JFrame {
      */
     public Navegador() {
         initComponents();
+        MarcadoresPanel.setLayout(new FlowLayout(0));
+        MarcadoresPanel.setVisible(false);
+        
         //directorio dond localizar los recursos
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
         
         
-        File homepag=new File("home.cm");
-        try {
-            //verificando si ya esxiste el archivo... de no ser asi lo crea
-            if(!homepag.exists()){
-                System.out.println(homepag);
-                FileWriter fw = new FileWriter(homepag);
-                BufferedWriter bw = new BufferedWriter(fw);
-                bw.write("http://www.cs.bham.ac.uk/~tpc/testpages/");
-                bw.close();
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "error :"+e.getMessage());
-        }
-        
-        //lectura del archivo de configuraciones.
-        try {
-            FileReader fr = new FileReader(homepag);
-            BufferedReader buff = new BufferedReader(fr);
-            home=buff.readLine();
-            buff.close();
-            fr.close();
-        } catch (Exception ex) {
-         
-            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
-        }
-        
+        cargarArchivos();
+        System.out.println(((JButton)MarcadoresPanel.getComponent(1)).getText());
         
         
  //*************************************************************************************************************
@@ -184,6 +167,8 @@ public class Navegador extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextPane1 = new javax.swing.JTextPane();
         Home = new javax.swing.JButton();
+        MarcadoresPanel = new javax.swing.JPanel();
+        MostrarMar = new javax.swing.JToggleButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -237,6 +222,24 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
+        javax.swing.GroupLayout MarcadoresPanelLayout = new javax.swing.GroupLayout(MarcadoresPanel);
+        MarcadoresPanel.setLayout(MarcadoresPanelLayout);
+        MarcadoresPanelLayout.setHorizontalGroup(
+            MarcadoresPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        MarcadoresPanelLayout.setVerticalGroup(
+            MarcadoresPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        MostrarMar.setText("Marcadores");
+        MostrarMar.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                MostrarMarStateChanged(evt);
+            }
+        });
+
         jMenu1.setText("File");
 
         jMenuItem1.setText("Definir pagina de Inicio");
@@ -269,6 +272,7 @@ public class Navegador extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(MarcadoresPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Tab1)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(Atras)
@@ -279,7 +283,9 @@ public class Navegador extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(Home)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)))
+                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 805, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(MostrarMar)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -292,9 +298,12 @@ public class Navegador extends javax.swing.JFrame {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(Atras)
-                        .addComponent(Home)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                        .addComponent(Home)
+                        .addComponent(MostrarMar)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(MarcadoresPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -420,11 +429,24 @@ boolean crtl=false;
         home=Historiales.get(Tab1.getSelectedIndex()).get(nums.get(Tab1.getSelectedIndex()));
         File homepag=new File("home.cm");
         try {
+            FileReader fr = new FileReader(homepag);
+            BufferedReader br = new BufferedReader(fr);
+            String archivo="";
+            String linea;
+            while(!(linea=br.readLine()).equals("<FIN>")){
+                if(linea.contains("<HOME>"))
+                    archivo=archivo+"<HOME>"+home+"</HOME>\n";
+                else    
+                    archivo=archivo+linea+"\n";
+            }
+            archivo = archivo +"<FIN>\n";
+            System.out.println(archivo);
+            
             //Escribiendo la nueva pagina de inicio.
              System.out.println(homepag);
                 FileWriter fw = new FileWriter(homepag);
                 BufferedWriter bw = new BufferedWriter(fw);
-                bw.write(home);
+                bw.write(archivo);
                 bw.close();
             
         } catch (Exception e) {
@@ -434,6 +456,15 @@ boolean crtl=false;
         // TODO add your handling code here:
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void MostrarMarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_MostrarMarStateChanged
+
+        if(MostrarMar.isSelected())
+            MarcadoresPanel.setVisible(true);
+        else
+            MarcadoresPanel.setVisible(false);
+        // TODO add your handling code here:
+    }//GEN-LAST:event_MostrarMarStateChanged
+/***************************************************************************************/
     public void actualizarBtns(){
         if(nums.get(Tab1.getSelectedIndex())>0)
             Atras.setEnabled(true);
@@ -445,12 +476,19 @@ boolean crtl=false;
         else
             Adelante.setEnabled(false);
     }
+  /***************************************************************************************/
     
+    
+    
+    
+ /************************************CREAR PESTAÑAS*****************************************/
     public void crearPestaña(){
         
             //Agregando historiales para cada uno de las pestañas
             ArrayList<String> Historial = new ArrayList<>();
             Historiales.add(Historial);
+            Htmls.add("");
+            Https.add("");
             int num=-1;
             nums.add(num);
     
@@ -522,6 +560,8 @@ boolean crtl=false;
                     //eliminando arreglos de los historiales
                     Historiales.remove(index);
                     nums.remove(index);
+                    Htmls.remove(index);
+                    Https.remove(index);
                     
                     
                     actualizarBtns();
@@ -543,8 +583,11 @@ boolean crtl=false;
             
         
     }
+/***********************************************FIN CREAR PESTAÑAS**************************************************************************************/    
     
     
+    
+/**************************************************************************************************/
     public class Cargar implements Runnable{
         
     boolean correr=false;
@@ -604,8 +647,10 @@ boolean crtl=false;
                         }
                         
                         Respuesta=guardar;
+                        Https.set(Tab1.getSelectedIndex(), Respuesta);
                         String[] codigo =guardar.split("<");
                         Html = guardar.substring(codigo[0].length());
+                        Htmls.set(Tab1.getSelectedIndex(), Html);
                         System.out.println(Html);
                         System.out.println("1");
                         
@@ -654,17 +699,88 @@ boolean crtl=false;
         }
 
 }
-
+/*******************************************************************************************************************/
+    
+    
     public void verPag(){
         
         texts.get(Tab1.getSelectedIndex()).setContentType("text/html");
-        texts.get(Tab1.getSelectedIndex()).setText(Html);
+        texts.get(Tab1.getSelectedIndex()).setText(Htmls.get(Tab1.getSelectedIndex()));
     }
+    
+    
     public void verHttp(){
         
         texts.get(Tab1.getSelectedIndex()).setContentType("");
-        texts.get(Tab1.getSelectedIndex()).setText(Respuesta);
+        texts.get(Tab1.getSelectedIndex()).setText(Https.get(Tab1.getSelectedIndex()));
     }
+    
+    public void cargarArchivos(){
+        File homepag=new File("home.cm");
+        try {
+            //verificando si ya esxiste el archivo... de no ser asi lo crea
+            if(!homepag.exists()){
+                System.out.println(homepag);
+                FileWriter fw = new FileWriter(homepag);
+                BufferedWriter bw = new BufferedWriter(fw);
+                bw.write("<HOME>http://www.cs.bham.ac.uk/~tpc/testpages/</HOME>\n");
+                bw.write("\n");
+                bw.write("<INICIO MARCADORES>\n");
+                bw.write("prueba1#http://www.cs.bham.ac.uk/~tpc/testpages/\n");
+                bw.write("prueba2#http://sheldonbrown.com/web_sample1.html\n");
+                bw.write("<FIN MARCADORES>\n");
+                bw.write("\n");
+                bw.write("<FIN>\n");
+                bw.close();
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "error :"+e.getMessage());
+        }
+        
+        //lectura del archivo de configuraciones.
+        try {
+            FileReader fr = new FileReader(homepag);
+            BufferedReader buff = new BufferedReader(fr);
+            home=buff.readLine();
+            home=home.substring(6, home.indexOf("</HOME>"));
+            buff.readLine();
+            buff.readLine();
+            String marca;
+            while(!(marca=buff.readLine()).equals("</MARCADORES>")){
+                
+                final String marcas[]=marca.split("#");
+                
+                JButton m = new JButton(marcas[0]);
+                
+                
+                m.addMouseListener(new java.awt.event.MouseAdapter() {
+                    public void mouseReleased(java.awt.event.MouseEvent evt) {
+                        if(!cargar.correr){
+                            cargar.setUrl(marcas[1]);
+                            cargar.cargarPag();
+                            Adelante.setEnabled(false);
+                            int temp = Historiales.get(Tab1.getSelectedIndex()).size();
+                            if(temp!=nums.get(Tab1.getSelectedIndex())+1)
+                                for(int i=nums.get(Tab1.getSelectedIndex())+1;i<temp;i++)
+                                    Historiales.get(Tab1.getSelectedIndex()).remove(i);
+                           Historiales.get(Tab1.getSelectedIndex()).add(marcas[1]);
+                            nums.set(Tab1.getSelectedIndex(),nums.get(Tab1.getSelectedIndex())+1);
+                        }  
+                    }
+                });
+                
+                MarcadoresPanel.add(m);
+            }
+            
+            buff.close();
+            fr.close();
+        } catch (Exception ex) {
+         
+            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
+        }
+    }
+    
+    
 
     /**
      * @param args the command line arguments
@@ -704,6 +820,8 @@ boolean crtl=false;
     private javax.swing.JButton Adelante;
     private javax.swing.JButton Atras;
     private javax.swing.JButton Home;
+    private javax.swing.JPanel MarcadoresPanel;
+    private javax.swing.JToggleButton MostrarMar;
     private javax.swing.JButton Recargar;
     private javax.swing.JTabbedPane Tab1;
     private javax.swing.JMenuItem cerrar;
