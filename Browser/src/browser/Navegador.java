@@ -73,6 +73,7 @@ public class Navegador extends javax.swing.JFrame {
     int pestañas=0;
     ArrayList<JTextPane> texts = new ArrayList();
     String home="";
+    int numMarca=-1;
     /**
      * Creates new form Navegador
      */
@@ -749,9 +750,23 @@ boolean crtl=false;
             while(!(marca=buff.readLine()).equals("</MARCADORES>")){
                 
                 final String marcas[]=marca.split("#");
-                
+                numMarca++;
                 JButton m = new JButton(marcas[0]);
-                
+                JPopupMenu pop = new JPopupMenu(numMarca+"");
+                JMenuItem menu1 = new JMenuItem("Eliminar");
+                menu1.addActionListener(new java.awt.event.ActionListener() {
+                     public void actionPerformed(java.awt.event.ActionEvent evt) {
+                         System.out.println(((JPopupMenu)((JComponent)evt.getSource()).getParent()).getLabel());
+                         MarcadoresPanel.remove(Integer.parseInt(((JPopupMenu)((JComponent)evt.getSource()).getParent()).getLabel()));
+                         for(int i =0;i<MarcadoresPanel.getComponents().length;i++)
+                             ((JButton)MarcadoresPanel.getComponent(i)).getComponentPopupMenu().setLabel(i+"");
+                         MarcadoresPanel.setVisible(false);
+                         MarcadoresPanel.setVisible(true);
+                     }
+                 });
+                 pop.add(menu1);
+                 m.setComponentPopupMenu(pop);
+                 
                 
                 m.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseReleased(java.awt.event.MouseEvent evt) {
