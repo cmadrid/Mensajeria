@@ -7,6 +7,7 @@ package browser;
 import java.awt.Insets;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -18,16 +19,71 @@ import javax.swing.JButton;
  */
 public class Pestañas extends javax.swing.JPanel {
     String Directorio;
-    int index;
+//    int index;
+    ArrayList<String> historial = new ArrayList<>();
+    int num=-1;
+
     /**
      * Creates new form Pestañas
      */
-    public void setIndex(int index){
-        this.index=index;
+    
+    //devuelve el tamaño de el historial de esta pestaña
+    public int getHistorialSize() {
+        return historial.size();
     }
-    public int getIndex(){
-        return index;
+
+    //añade una nueva pagina al historial de esa pestaña
+    public void addPagina(String url) {
+        this.historial.add(url);
     }
+    
+    //borra todas las paginas a partir de la actual
+    public void delPags(){
+        for(int i=num+1;i<historial.size();i++)
+            historial.remove(i);
+    }
+    
+    //obtiene la pagina actual de la pestaña
+    public String getPagina(){
+        return historial.get(num);
+    }
+    
+    //obtiene la proxima pagina en la lista
+    public String getPaginaS(){
+        return historial.get(num+1);
+    }
+    
+    //devuelve la pagina anterior en la lista
+    public String getPaginaR(){
+        return historial.get(num-1);
+    }
+    
+    //indica sobre que index del historial esta ubicado
+    public int getNum() {
+        return num;
+    }
+
+//    public void setNum(int num) {
+//        this.num = num;
+//    }
+    
+    //aumenta en la posicion sobre que elemento estoy ubicado
+    public void setNumS() {
+        this.num++;
+    }
+    
+    //reduce en uno sobree que elemento estoy ubicado
+    public void setNumR() {
+        this.num--;
+    }
+
+    
+//    public void setIndex(int index){
+//        this.index=index;
+//    }
+//    public int getIndex(){
+//        return index;
+//    }
     public Pestañas() {
         initComponents();
         Directorio=getClass().getResource("").toExternalForm();
@@ -45,6 +101,9 @@ public class Pestañas extends javax.swing.JPanel {
     
     public void setTitle(String titulo){
         title.setText(titulo);
+    }
+    public String getTitle(){
+        return title.getText();
     }
     public void setIcon(String icon){
         if(icon==null)

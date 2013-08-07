@@ -15,6 +15,7 @@ public class Browser {
      */
     public static void main(String[] args) {
         Navegador nav = new Navegador();
+        
         nav.setVisible(true);
         // TODO code application logic here
     }
