@@ -24,6 +24,8 @@ public class Historial extends javax.swing.JFrame {
     
     public Historial() {
         initComponents();
+        //añado un evento para que en cuanto se cierre la ventana mande un valor de null a la variable histo de la clase Navegador
+        //mientras histo sea null yo creare nueva instancia caso contraro no lo hare
         addWindowListener(new WindowAdapter(){
                         public void windowClosing(WindowEvent we){
                             Navegador.histo=null;
@@ -31,17 +33,18 @@ public class Historial extends javax.swing.JFrame {
 //        Lista.setCellRenderer(new MyCellRender());
     }
 
+    
     public void setHisto(ArrayList<String> histo) {
         this.histo = new ArrayList<>();
         this.histo = (ArrayList<String>) histo.clone();
     }
     
-    
+    //esta funcion muestra en el jlist todos los elementos del historial que coincidan con la barra de busqueda
     public void enListar(){
         DefaultListModel modelo = new DefaultListModel();
         for(int i = histo.size()-1;i>-1;i--){
             String s = histo.get(i);
-            if(s.toUpperCase().contains(busqueda.getText().toUpperCase())){
+            if(s.toUpperCase().contains(busqueda.getText().toUpperCase())){//comparo que tengan en comun lo escrito 
                 String h[]=s.split("#");
                 modelo.addElement(h[0]+" <--> "+h[1]);
             }
@@ -154,18 +157,18 @@ public class Historial extends javax.swing.JFrame {
 
     private void ListaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ListaMouseClicked
 
-        if(Lista.isEnabled())
-    if(evt.getClickCount() == 2){
-        int index = Lista.locationToIndex(evt.getPoint());
-        ListModel dlm = Lista.getModel();
-        Object item = dlm.getElementAt(index);
-        String url =item.toString().split(" <--> ")[1];
-        Navegador.aCargar=url;
-        Navegador.bandera.setSelected(false);
-        Navegador.bandera.setSelected(true);
-        this.dispose();
-        
-    }
+    if(Lista.isEnabled())
+        if(evt.getClickCount() == 2){//hago un conteo x si es doble click
+            int index = Lista.locationToIndex(evt.getPoint());
+            ListModel dlm = Lista.getModel();
+            Object item = dlm.getElementAt(index);//obtengo el elemento sobre el que se clickeo
+            String url =item.toString().split(" <--> ")[1];//asigno el url a cargar
+            Navegador.aCargar=url;//lo mando a la clase Navegador para cargarga
+            Navegador.bandera.setSelected(false);//cambio de estado un componentepara poder iniciar un evento en la otra ventana
+            Navegador.bandera.setSelected(true);
+            this.dispose();//cierro esta ventana al cargar el url
+
+        }
         // TODO add your handling code here:
     }//GEN-LAST:event_ListaMouseClicked
 
