@@ -12,20 +12,38 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JTextPane;
+import javax.swing.JViewport;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 /**
  *
  * @author Cesar Madrid
  */
-public class Pestañas extends javax.swing.JPanel {
+public class Pestanas extends javax.swing.JPanel {
     String Directorio;
+    Pestanas seleccionada = this;
 //    int index;
+    String Html;
+    String Http;
+    Navegador.Cargar cargar;
     ArrayList<String> historial = new ArrayList<>();
     int num=-1;
+    JTextPane text = new JTextPane();
 
     /**
      * Creates new form Pestañas
-     */
+     */    
+    public JTextPane getText() {
+        return text;
+    }
+
+    public void setText(JTextPane text) {
+        this.text = text;
+    }
+
     
     //devuelve el tamaño de el historial de esta pestaña
     public int getHistorialSize() {
@@ -39,7 +57,7 @@ public class Pestañas extends javax.swing.JPanel {
     
     //borra todas las paginas a partir de la actual
     public void delPags(){
-        for(int i=num+1;i<historial.size();i++)
+        for(int i=historial.size()-1;i>num;i--)
             historial.remove(i);
     }
     
@@ -63,6 +81,24 @@ public class Pestañas extends javax.swing.JPanel {
         return num;
     }
 
+    public String getHtml() {
+        return Html;
+    }
+
+    public void setHtml(String Html) {
+        this.Html = Html;
+    }
+
+    public String getHttp() {
+        return Http;
+    }
+
+    public void setHttp(String Http) {
+        this.Http = Http;
+    }
+    
+    
+
 //    public void setNum(int num) {
 //        this.num = num;
 //    }
@@ -84,7 +120,7 @@ public class Pestañas extends javax.swing.JPanel {
 //    public int getIndex(){
 //        return index;
 //    }
-    public Pestañas() {
+    public Pestanas() {
         initComponents();
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
@@ -92,7 +128,7 @@ public class Pestañas extends javax.swing.JPanel {
         try {
             cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestañas.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
         }
         cerrar.setBorder(null);
         cerrar.setMargin(null);
@@ -112,9 +148,56 @@ public class Pestañas extends javax.swing.JPanel {
             try {
                 icono.setIcon(new ImageIcon(new URL(icon)));
             } catch (MalformedURLException ex) {
-                Logger.getLogger(Pestañas.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
             }
     }
+    
+    
+    
+    //funcion que crea un nuevo JtextPane para eliminar todas las propoiedadesadquiridas x alguna pagina antigua
+    public void nuevoText(Navegador.Cargar cargar1){
+        
+        JViewport jv = (JViewport) text.getParent();
+        text = new JTextPane();
+        text.setContentType("text/html");
+        text.setEditable(false);
+        jv.setView(text);
+        cargar=cargar1;
+        
+        
+         //añadiendo leer links en todas las pestañas
+            text.addHyperlinkListener(new HyperlinkListener() {
+            public void hyperlinkUpdate(HyperlinkEvent e) {
+                if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    
+//                   JOptionPane.showMessageDialog( null, e.getURL().toString());
+                    String ref[]=e.getDescription().replaceAll("http://", "").split("/");//todo el servidor de la pagina eliminando el protocolo y todo el path
+
+                    //comprobando que sea una direccion valida
+                    System.out.println(ref[0]);
+                    if(ref[0].contains(".")){//si la direccion no contiene un '.' entonces no es una direccion valida o es una de referencia(no implementada aun)
+                       
+                       
+                        
+                        cargar.setUrl(e.getURL().toExternalForm());//asigno el url de la direccion a cargar
+                        delPags();//borro todos los links de las paginas posteriores a la que me encontraba
+                        addPagina(e.getURL().toExternalForm());//añado la pagina cargada al historial de la pestaña
+                        setNumS();//aumento el valor en un sobre en el que me encontraria en la lista de historiales de la pestaña
+                        cargar.cargarPag();//cargo la pagina
+//                        Adelante.setEnabled(false);//desactivo el boton adelante
+                   }
+                   else
+                    JOptionPane.showMessageDialog( null, "Direcciones de referencia no disponibles");
+
+
+                }
+            }
+        });
+        
+    }
+    
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -132,11 +215,11 @@ public class Pestañas extends javax.swing.JPanel {
         title.setText("New Tab");
 
         cerrar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                cerrarMouseExited(evt);
-            }
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 cerrarMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                cerrarMouseExited(evt);
             }
         });
 
@@ -174,7 +257,7 @@ public class Pestañas extends javax.swing.JPanel {
         try {
             cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x2.png")));
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestañas.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
         }        // TODO add your handling code here:
     }//GEN-LAST:event_cerrarMouseEntered
 
@@ -184,7 +267,7 @@ public class Pestañas extends javax.swing.JPanel {
         try {
             cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
         } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestañas.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_cerrarMouseExited
