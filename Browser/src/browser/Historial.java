@@ -18,17 +18,19 @@ import javax.swing.ListModel;
 public class Historial extends javax.swing.JFrame {
 
     ArrayList<String> histo = new ArrayList<>();
+    Navegador nav;
     /**
      * Creates new form Historial
      */
     
-    public Historial() {
+    public Historial(Navegador navegador) {
         initComponents();
+        nav=navegador;
         //añado un evento para que en cuanto se cierre la ventana mande un valor de null a la variable histo de la clase Navegador
         //mientras histo sea null yo creare nueva instancia caso contraro no lo hare
         addWindowListener(new WindowAdapter(){
                         public void windowClosing(WindowEvent we){
-                            Navegador.histo=null;
+                            nav.histo=null;
                         }});
 //        Lista.setCellRenderer(new MyCellRender());
     }
@@ -163,9 +165,7 @@ public class Historial extends javax.swing.JFrame {
             ListModel dlm = Lista.getModel();
             Object item = dlm.getElementAt(index);//obtengo el elemento sobre el que se clickeo
             String url =item.toString().split(" <--> ")[1];//asigno el url a cargar
-            Navegador.aCargar=url;//lo mando a la clase Navegador para cargarga
-            Navegador.bandera.setSelected(false);//cambio de estado un componentepara poder iniciar un evento en la otra ventana
-            Navegador.bandera.setSelected(true);
+            nav.cargarHistorial(url);
             this.dispose();//cierro esta ventana al cargar el url
 
         }
@@ -179,37 +179,37 @@ public class Historial extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Historial().setVisible(true);
-            }
-        });
-    }
+//    public static void main(String args[]) {
+//        /* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//         */
+//        try {
+//            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//                if ("Nimbus".equals(info.getName())) {
+//                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                    break;
+//                }
+//            }
+//        } catch (ClassNotFoundException ex) {
+//            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (InstantiationException ex) {
+//            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (IllegalAccessException ex) {
+//            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//            java.util.logging.Logger.getLogger(Historial.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//        }
+//        //</editor-fold>
+//
+//        /* Create and display the form */
+//        java.awt.EventQueue.invokeLater(new Runnable() {
+//            public void run() {
+//                new Historial().setVisible(true);
+//            }
+//        });
+//    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JList Lista;
     private javax.swing.JTextField busqueda;

@@ -4,7 +4,6 @@
  */
 package browser;
 
-import java.awt.Insets;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -28,14 +27,47 @@ public class Pestanas extends javax.swing.JPanel {
 //    int index;
     String Html;
     String Http;
-    Navegador.Cargar cargar;
+    Cargar cargar;
     ArrayList<String> historial = new ArrayList<>();
     int num=-1;
-    JTextPane text = new JTextPane();
+    JTextPane text;
+    Navegador nav;
 
     /**
      * Creates new form Pestañas
      */    
+    
+   
+
+
+    public Pestanas(Navegador navegador) {
+        nav=navegador;
+        initComponents();
+        Directorio=getClass().getResource("").toExternalForm();
+        Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
+        try {
+            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        cerrar.setBorder(null);
+        cerrar.setMargin(null);
+        
+    }
+    
+    
+     public void setCargar(Cargar cargar){
+        this.cargar = cargar;
+    }
+    
+    public Cargar getCargar(){
+        return cargar;
+    }
+    
+    public boolean cargando(){
+        return cargar.cargando();
+    }
+    
     public JTextPane getText() {
         return text;
     }
@@ -57,7 +89,7 @@ public class Pestanas extends javax.swing.JPanel {
     
     //borra todas las paginas a partir de la actual
     public void delPags(){
-        for(int i=historial.size()-1;i>num;i--)
+        for(int i=historial.size()-1; i>num; i--)
             historial.remove(i);
     }
     
@@ -112,28 +144,7 @@ public class Pestanas extends javax.swing.JPanel {
     public void setNumR() {
         this.num--;
     }
-
     
-//    public void setIndex(int index){
-//        this.index=index;
-//    }
-//    public int getIndex(){
-//        return index;
-//    }
-    public Pestanas() {
-        initComponents();
-        Directorio=getClass().getResource("").toExternalForm();
-        Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
-        System.out.println(Directorio+"asdcc");
-        try {
-            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        cerrar.setBorder(null);
-        cerrar.setMargin(null);
-        
-    }
     
     public void setTitle(String titulo){
         title.setText(titulo);
@@ -155,14 +166,13 @@ public class Pestanas extends javax.swing.JPanel {
     
     
     //funcion que crea un nuevo JtextPane para eliminar todas las propoiedadesadquiridas x alguna pagina antigua
-    public void nuevoText(Navegador.Cargar cargar1){
+    public void nuevoText(){
         
         JViewport jv = (JViewport) text.getParent();
         text = new JTextPane();
         text.setContentType("text/html");
         text.setEditable(false);
         jv.setView(text);
-        cargar=cargar1;
         
         
          //añadiendo leer links en todas las pestañas
@@ -221,6 +231,9 @@ public class Pestanas extends javax.swing.JPanel {
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 cerrarMouseExited(evt);
             }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                cerrarMouseClicked(evt);
+            }
         });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -271,6 +284,31 @@ public class Pestanas extends javax.swing.JPanel {
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_cerrarMouseExited
+
+    private void cerrarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cerrarMouseClicked
+
+        if(nav.pestañas>1){//Validacion para que siempre quede almenos una pestaña
+                    
+                    
+                    //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
+                    if(nav.getTab().getSelectedIndex()==nav.pestañas-1)
+                        nav.getTab().setSelectedIndex(nav.pestañas-2);
+                    
+                    
+                    //recuperando el indice del tab en el que se encuentra ese componente y con el elimino de los arreglos y asigno nuevo 
+                    //valores de indice a los componentes restantes posteriores
+//                    int index=nueva.getIndex();
+                    int index =nav.getTab().indexOfTabComponent(this);
+                    System.out.println(nav.getTab().indexOfTabComponent(this));
+                    nav.getTab().remove(index);
+                    nav.pestañas--;
+                    getCargar().detener();
+                    
+                    
+                }else System.exit(0);
+        
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cerrarMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cerrar;

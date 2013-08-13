@@ -4,57 +4,36 @@
  */
 package browser;
 
-import java.awt.Button;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.JToggleButton;
-import javax.swing.JViewport;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import sun.org.mozilla.javascript.internal.ast.ContinueStatement;
+
+
 
 /**
  *
@@ -62,10 +41,8 @@ import sun.org.mozilla.javascript.internal.ast.ContinueStatement;
  */
 public class Navegador extends javax.swing.JFrame {
 
-    Socket conexion = new Socket();
-    Cargar cargar = new Cargar();
-    Thread carga;
-    JFrame este = this;
+    Socket conexion ;
+    Navegador este = this;
     String Directorio;
     String Html="";
     String Respuesta="";
@@ -73,14 +50,24 @@ public class Navegador extends javax.swing.JFrame {
     String home="";
     ArrayList<String>marcadores = new ArrayList<>();
     ArrayList<String> historial = new ArrayList<>();
-    static Historial histo=null;
+    Historial histo=null;
     int numMarca=-1;
-    static JToggleButton bandera= new JToggleButton();
-    static String aCargar="";
+    Map<String,String>cooks=new HashMap<>();
     
     /**
      * Creates new form Navegador
      */
+    public JTextField getUrl(){
+        return url;
+    }
+    
+    public JTabbedPane getTab(){
+        return Tab1;
+    }
+    
+    public JButton getAtras(){
+        return Atras;
+    }
     public Navegador() {
         initComponents();
         MarcadoresPanel.setLayout(new FlowLayout(0));
@@ -90,32 +77,6 @@ public class Navegador extends javax.swing.JFrame {
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
         
-        
-        cargarArchivos();
-        
-        bandera.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                if(bandera.isSelected()&&!cargar.correr){
-                    cargar.setUrl(aCargar);
-                    cargar.cargarPag();
-                }
-            }
-        });
-        
-        
-        
- //*************************************************************************************************************
-        //leer archivos dentro del .jar: leer la informacion de home
-//        try {
-//            InputStream in = Navegador.class.getClassLoader().getResourceAsStream("archivos/home.cm");
-//            BufferedReader buff = new BufferedReader(new InputStreamReader(in));
-//            home=buff.readLine();
-//        } catch (Exception ex) {
-//         
-//            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
-//        }
-        
-   //******************************************************************************************************************     
         
         //Añadiendo iconos a los botones
         ImageIcon atras=new ImageIcon();
@@ -138,6 +99,29 @@ public class Navegador extends javax.swing.JFrame {
         Recargar.setIcon(icono);
         icono = new ImageIcon(home.getImage().getScaledInstance(23, 23, Image.SCALE_DEFAULT));
         Home.setIcon(icono);
+        
+        
+        
+        cargarArchivos();
+        
+        
+        
+        
+        
+ //*************************************************************************************************************
+        //leer archivos dentro del .jar: leer la informacion de home
+//        try {
+//            InputStream in = Navegador.class.getClassLoader().getResourceAsStream("archivos/home.cm");
+//            BufferedReader buff = new BufferedReader(new InputStreamReader(in));
+//            home=buff.readLine();
+//        } catch (Exception ex) {
+//         
+//            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
+//        }
+        
+   //******************************************************************************************************************     
+        
+        
        
         //creando y añadiendo los popmenu a las pestañas
        JMenuItem menu = new JMenuItem("Mostrar Página");
@@ -156,9 +140,7 @@ public class Navegador extends javax.swing.JFrame {
         jPopupMenu1.add(menu1);
         Tab1.setComponentPopupMenu(jPopupMenu1);
         
-        //iniciando hilo de cargar las paginas
-        carga = new Thread(cargar);
-        carga.start();
+        ;
         
 
     }
@@ -351,17 +333,20 @@ boolean crtl=false;
         if(key==KeyEvent.VK_CONTROL)
             crtl=true;
             
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
         
-        if(key==KeyEvent.VK_ENTER)
+        if(key==KeyEvent.VK_ENTER && seleccionada.cargando()==false)
         {
             //si crtl es true agregara el .com al final
             if(crtl==true)
                 url.setText(url.getText()+".com");
             
+            
             //mando el url a cargar, actualizo el historial de la pestaña, mando a cargar la pagina y deshabilito el boton adelante
-            cargar.setUrl(url.getText());
+            seleccionada.getCargar().setUrl(url.getText());
             alterarHistorial(url.getText());
-            cargar.cargarPag();
+            
+            seleccionada.getCargar().cargarPag();
             Adelante.setEnabled(false);
         
         }
@@ -369,13 +354,12 @@ boolean crtl=false;
     }//GEN-LAST:event_urlKeyPressed
 
     private void AtrasMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AtrasMouseReleased
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));//recupero la pestaña actual
         //verifico que el boton atras este activado y no este cargando una pagina
-        if(Atras.isEnabled()&&!cargar.correr){
-            //recupero la pestaña que tengo seleccionada y hago un recorrido hacia atras de su historial y activo el boton adelante
-            Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+        if(Atras.isEnabled()&&!seleccionada.cargando()){
             seleccionada.setNumR();//reduce en uno mi variable que indica donde estoy aputando de la lista de historiales
-            cargar.setUrl(seleccionada.getPagina());
-            cargar.cargarPag();
+            seleccionada.getCargar().setUrl(seleccionada.getPagina());
+            seleccionada.getCargar().cargarPag();
             Adelante.setEnabled(true);
             if(seleccionada.getNum()==0)//si ya estoy apuntando al index 0 de mi lista se deshabilita el boton atras
                 Atras.setEnabled(false);
@@ -385,13 +369,14 @@ boolean crtl=false;
     }//GEN-LAST:event_AtrasMouseReleased
 
     private void AdelanteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdelanteMouseReleased
+        
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
         //verifico que el boton adelante este activado y no este cargando una pagina
-        if(Adelante.isEnabled()&&!cargar.correr){
+        if(Adelante.isEnabled()&&!seleccionada.cargando()){
             //recupero la pestaña que tengo seleccionada y hago un recorrido hacia adelante de su historial y activo el boton atras
-            Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
-            cargar.setUrl(seleccionada.getPaginaS());
+            seleccionada.getCargar().setUrl(seleccionada.getPaginaS());
             seleccionada.setNumS();//aumenta en uno mi variable que indica donde estoy aputando de la lista de historiales
-            cargar.cargarPag();
+            seleccionada.getCargar().cargarPag();
             if(seleccionada.getHistorialSize()==seleccionada.getNum()+1)//si ya estoy apuntando al index final de mi lista se deshabilita el boton adelante
                 Adelante.setEnabled(false);
         }
@@ -401,7 +386,8 @@ boolean crtl=false;
     //boton recargar de la aplicacion
     private void RecargarMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecargarMouseReleased
         
-        cargar.cargarPag();
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+        seleccionada.getCargar().cargarPag();
         // TODO add your handling code here:
     }//GEN-LAST:event_RecargarMouseReleased
 
@@ -452,12 +438,14 @@ boolean crtl=false;
     //accion del boton home o pagina de inicio
     private void HomeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_HomeMouseReleased
 
+        
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
         //verifico q no este cargando una pagina antes de iniciar el evento
-        if(!cargar.correr){
+        if(!seleccionada.cargando()){
             
             alterarHistorial(home);//actualizo el historial de la pestaña
-            cargar.setUrl(home);//agrego el url a cargar(el home)
-            cargar.cargarPag();//cargo la pagina
+            seleccionada.getCargar().setUrl(home);//agrego el url a cargar(el home)
+            seleccionada.getCargar().cargarPag();//cargo la pagina
             
         }
         // TODO add your handling code here:
@@ -467,14 +455,10 @@ boolean crtl=false;
     public void alterarHistorial(String pag){
         //recupero la pestaña seleccionada
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
-        System.out.println(seleccionada.getNum()+ "sss");
-        int temp = seleccionada.getHistorialSize();//recupero la longitud del historial de esa pestaña
-        System.out.println(seleccionada.getHistorialSize());
+        
        seleccionada.delPags();//manda a borrar todas las paginas posteriores a la que me encuentro 
-        System.out.println(seleccionada.getHistorialSize());
        seleccionada.addPagina(pag);//agrego la pagina recien cargada al final de la lista
        seleccionada.setNumS();//aumento en uno el numero indicador de ubicacion en la lista
-        System.out.println(seleccionada.getNum()+ "sss");
            
     }
     
@@ -489,6 +473,7 @@ boolean crtl=false;
 
     //evento de cambio de estado del boton para mostrar marcadores
     private void MostrarMarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_MostrarMarStateChanged
+
         //si elboton esta activado mostrara el panel de marcadores, caso contrario lo ocultara
         if(MostrarMar.isSelected())
             MarcadoresPanel.setVisible(true);
@@ -518,7 +503,7 @@ boolean crtl=false;
     private void menu_historialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_historialActionPerformed
         //si no esta instanceada la ventana la intancio y la llamo
         if(histo==null){
-            histo = new Historial();
+            histo = new Historial(este);
             histo.setHisto(historial);//le mando la lista de historiales de todo el navegador
             histo.setVisible(true);
         }//en caso q ya este en pantalla
@@ -568,46 +553,20 @@ boolean crtl=false;
            
             
             //llamada a mi componente Pestaña y añadiendole el index del tab al que estará asignado
-            final Pestanas nueva = new Pestanas();
+            final Pestanas nueva = new Pestanas(este);
             nueva.setText(n);
 //            nueva.setIndex(pestañas);
+            Cargar cargar = new Cargar(este);
+            Thread carga = new Thread(cargar);
+            carga.start();
+            cargar.setPestana(nueva);
             
-            nueva.nuevoText(cargar);
-            
-            
-            
-            
-      //**************************************************************************************************************      
-            //evento para cerrar pestañas
-            nueva.getCerrar().addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                //Validacion para que siempre quede almenos una pestaña
-                if(pestañas>1){
-                    
-                    
-                    //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
-                    if(Tab1.getSelectedIndex()==pestañas-1)
-                        Tab1.setSelectedIndex(pestañas-2);
-                    
-                    
-                    //recuperando el indice del tab en el que se encuentra ese componente y con el elimino de los arreglos y asigno nuevo 
-                    //valores de indice a los componentes restantes posteriores
-//                    int index=nueva.getIndex();
-                    int index =Tab1.indexOfTabComponent(nueva);
-                    System.out.println(Tab1.indexOfTabComponent(nueva));
-                    Tab1.remove(index);
-                    pestañas--;
-                    
-                    
-                }else System.exit(0);
-                
-            }
-             });
+            nueva.setCargar(cargar);
             
             
-        //*********************************************************************************************************************    
             
-          
+            nueva.nuevoText();
+    
             //añado el componente Pestaña al tab recien creado, aumento el numero de tabs y selecciono el final.
             Tab1.setTabComponentAt(pestañas, nueva);
             pestañas++;
@@ -616,205 +575,40 @@ boolean crtl=false;
         
     }
 /***********************************************FIN CREAR PESTAÑAS**************************************************************************************/    
-    
+    public void cargarHistorial(String aCargar){ 
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+              
+        if(!seleccionada.cargando()){
+            seleccionada.getCargar().setUrl(aCargar);
+            seleccionada.getCargar().cargarPag();
+        }
+    }
    
+    public void guardarCookie(String cadena){
+        System.out.println("*************************************************");
+        String[] cookies =cadena.split("Set-Cookie: ");
+        int i =1;
+        for(i = 1;i<cookies.length;i++)
+            cooks.put("Cookie: "+cookies[i].substring(0, cookies[i].indexOf("=")), cookies[i].substring(cookies[i].indexOf("=")+1, cookies[i].indexOf("\n")));
+        System.out.println(cooks);
+        System.out.println("***************************************************");
+    }
+ /******************************************************************************************************************************************************/
+    public String cargarCookies(){
+        Iterator it = cooks.keySet().iterator();
+        String temp;
+        String cadena="";
+        while(it.hasNext()){//testeando cookies dentro de una sesion
+            temp=(String) it.next();
+            if(!cooks.get(temp).substring(0,7).equals("deleted"))
+                cadena=cadena+temp+"="+cooks.get(temp).substring(0, cooks.get(temp).indexOf(";"))+"\n";
+        }
+        return cadena;
+    }
+    
     
 /**************************************************************************************************/
-    //hilo principal con el que cargo mis paginas
-    public class Cargar implements Runnable{
-    
-    boolean correr=false;//booleano que decide si entro a la parte importante del hilo q se encarga de cargar mis paginas
-    boolean continuar=true;//variable que decide cuando dejar de leer la respuesta del servidor en cuanto encuentre algo q defina el final de mensaje
-    String Url="";//variable dond guardare la direccion antes de cargarla
-    int seleccionado=0;//int que almacenara sobre que pestaña estare trabajando
-        @Override
-        public void run() {
-            
-            while(true){
-                
-                seleccionado=Tab1.getSelectedIndex();//asigno el index de la pestaña actual
-                Pestanas seleccionada = (Pestanas) Tab1.getTabComponentAt(seleccionado);//almaceno la pestaña actual
-                seleccionada.setIcon(null);//elimino cualquier icono activo en la pestaña
-                try {
-                    Thread.sleep(50);//asigno un tiempo de espera antes de volver a verificar si esta listo para cargar una pagina
-                    if(correr){
-                        seleccionada.nuevoText(cargar);//asigno un nuevo textPane a la pestaña para eliminar cualquer propiedad cargada
-                        
-                        seleccionado=Tab1.getSelectedIndex();//asigno el index de la pestaña actual
-                        seleccionada = (Pestanas) Tab1.getTabComponentAt(seleccionado);//almaceno la pestaña actual
-                        seleccionada.setIcon(Directorio+"imagenes/loader.gif");//agrego un gif de cargando pagina
-                        
-                        
-                        url.setText(Url);//agrego el url a cargar en la barra de direcciones
-                        Url =Url.replaceAll("http://", "");//elimino si es q existe el protocolo http:// ya q solo cargo paginas de ese tipo
-                        
-                        if(!Url.contains("/"))//agrego un / al final del url en casode no tenerlo
-                            Url=Url+"/";
-                        
-                        String cadenas[]=Url.split("/");//separo el string por '/' para tomar el primero(el servidor)
-                        String servidor=cadenas[0];//almaceno el servidor en un string
-                        String pagina =Url.substring(cadenas[0].length());//tomo el path a partir de dond acaba elservidor y lo almaceno
-                        conexion.close();//termino la conexion con cualquier socket
-                        conexion=new Socket(servidor, 80);//hago la llamada al servidor al puerto 80 (http)
-                        String requerimiento="\n\n\n\nGET "+pagina+" HTTP/1.1\nHost: "+servidor+"\nConnection: close\n\n";//requerimiento http
 
-                        //envio el requerimiento al servidor
-                        PrintWriter pw = new PrintWriter(conexion.getOutputStream());
-                        pw.print(requerimiento);
-                        pw.flush();
-                        
-                        //inicio un buffer para la lectura de lo que me responde el servidor
-                        String guardar;
-                        BufferedReader in = new BufferedReader(new InputStreamReader(conexion.getInputStream()));
-                        guardar = in.readLine();
-                       
-                        
-                        
-                        continuar=true;
-                        boolean inicio=false;
-                        while(continuar){
-                            String linea= in.readLine();//leo la siguiente linea
-                            
-                            //validando hasta donde llega la pagina web
-                            if(linea.toUpperCase().contains("<HTML")&&!inicio)//compruebo si la pagina inicia con un Html
-                                inicio=true;                                
-                            
-                            
-                            if(linea!=null)//mientras el valor recibido sea diferente de null lo almaceno
-                                guardar = guardar+"\n" +linea;
-                            else//en caso que sea null salgo del ciclo
-                                break;
-                            
-                            //verificando si las paginas iniciaban con el tag html
-                            if(inicio){
-                                if(linea.toUpperCase().contains("</HTML>"))
-                                    break;
-                            }
-                            else
-                                if(linea.toUpperCase().contains("</BODY>"))
-                                    break;
-                        }
-                        
-                        
-                        Respuesta=guardar;//guardo todo el requerimiento recibido en respuesta
-                        //comparo si dio algun error al cargar la pagina y valido la respuesta de algunos errores
-                        if(Respuesta.substring(9, 12).equals("301")||Respuesta.substring(9, 12).equals("302"))
-                        {
-                            //tomo el link que el servidor respondio
-                            int inicia =Respuesta.toUpperCase().indexOf("LOCATION: ")+10;
-                            cargar.setUrl(Respuesta.substring(inicia, inicia+Respuesta.substring(inicia).indexOf("\n")));
-                            continue;
-                            
-                        }
-                            
-                        //agregando el http actual de la pestaña
-                        seleccionada.setHttp(Respuesta);
-                        String[] codigo =guardar.split("<");
-                        Html = guardar.substring(codigo[0].length());
-                        
-                        //reemplanzando el tag meta que provoca que las paginas dejen de ser reconocidas.
-                        Html=Html.replaceAll("<meta", "<metas");
-                        Html=Html.replaceAll("<Meta", "<Metas");
-                        Html=Html.replaceAll("<META", "<METAS");
-                        
-                        
-                        /*Espacio para intentar eliminar los scripts*/ 
-                        
-                        String fas[] = Html.split("<script>");
-                        String fasz="";
-                        int i=0;
-                        fasz=fas[i];
-                        
-                        for(i=1;i<fas.length;i++)
-                            fasz=fasz+fas[i].substring(fas[i].indexOf("</script>")+9)+"\n";
-                        
-                        Html=fasz;
-                        /*Espacio para intentar eliminar los scripts*/ 
-                        
-                        
-                        
-                        //agregando el html actual de la pestaña
-                        seleccionada.setHtml(Html);//guardo en la pestaña el codigo html actual en la pag
-                        seleccionada.getText().setContentType("text/html");//defino q codigo va a leer mi textpane
-                        seleccionada.getText().setText(Html);//agrego el codigo a mi textpane
-                        
-                        
-                        
-                        String titulo="";//inicializo la variable que guardara el titulo de mi pestaña
-                        if(Html.toUpperCase().contains("<TITLE>"))//busco si mi pagina tiene el tag title
-                            titulo=Html.substring(Html.toUpperCase().indexOf("<TITLE>")+7, Html.toUpperCase().indexOf("</TITLE>"));//asigno en contenido de title a mi pagina
-                        
-                        else
-                            titulo=Url;//en caso de no tener el title le asigno de nombre el url de mi pagina
-                        
-                        este.setTitle(titulo);//le asigno el titulo a toda la ventana
-                        ((Pestanas)Tab1.getTabComponentAt(seleccionado)).setTitle(titulo);//le asigno titulo ami pestaña
-                        
-                        if(seleccionada.getNum()!=0)//en caso de que no me encuentre sobre el elemento 0 de la lista de historial de la pestaña
-                            Atras.setEnabled(true);//habilitare el boton atras
-                        correr=false;//detendre el boolean para repetir el bucle hasgta otra orden
-                        
-                        //almacenar pagina en historial
-                        actualizarHistorial(titulo+"#"+Url);
-                        actualizarBtns();
-                        
-                    }
-//                    System.out.println(Respuesta);
-                
-                } catch (IOException ex) {
-    //                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
-                    seleccionada.getText().setText("<h>Error: Pagina no encontrada</h>");
-                    correr=false;
-                } catch (InterruptedException ex) {
-                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
-                }catch(Exception e){
-                    seleccionada.getText().setText("<h>Error: Pagina no encontrada</h>");
-                    correr=false;
-                }
-            
-            }
-            
-        }
-        
-        //funcion que activa el boolean para que inicie otro bucle de cargar pagina
-        public void cargarPag(){
-            continuar=false;
-            
-            correr=true;
-        }
-        
-        //funcion para definir el url a cargar
-        public void setUrl(String url){
-            Url=url;
-        }
-
-}
-/*******************************************************************************************************************/
-     
-    /*
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     * 
-     comentado todo hasta est punto
-     * 
-     * 
-     * 
-     * 
-     * 
-     *      
-     * 
-     * 
-     * 
-     * 
-     */
     
     //muestra la pagina tal como se debe ver
     public void verPag(){
@@ -826,7 +620,7 @@ boolean crtl=false;
     //muestra la respuesta del requerimiento HTTP
     public void verHttp(){
         
-        ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getText().setContentType("");//le programo q muestre el texto como lo mando
+        ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getText().setContentType("text/text");//le programo q muestre el texto como lo mando
         ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getText().setText(((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getHttp());
     }
     
@@ -869,7 +663,6 @@ boolean crtl=false;
                 home="http://www.cs.bham.ac.uk/~tpc/testpages/";
                 marcadores.add("pagina1#http://www.cs.bham.ac.uk/~tpc/testpages/");
                 marcadores.add("pagina2#http://sheldonbrown.com/web_sample1.html");
-                System.out.println(homepag);
                 actualizarArchivo();
             }
         } catch (Exception e) {
@@ -885,7 +678,6 @@ boolean crtl=false;
             buff.readLine();
             buff.readLine();
             String marca;
-            marcadores=new ArrayList<>();
             while(!(marca=buff.readLine()).equals("</MARCADORES>")){//recupero los marcadores uno x uno
                 crearMarcador(marca);
             }
@@ -940,11 +732,12 @@ boolean crtl=false;
                 //creo el evento de abrir la pagina al clickear el popmenu
                 m.addMouseListener(new java.awt.event.MouseAdapter() {
                     public void mouseReleased(java.awt.event.MouseEvent evt) {
-                        if(!cargar.correr){//siempre y cuando noi este cargando inguna pagina cargara el marcador
-                            cargar.setUrl(marcas[1]);//asigno el url del marcador
-                            cargar.cargarPag();//cargo el url
+                        
+                        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));//recupero la pestaña que estoy usando
+                        if(!seleccionada.cargando()){//siempre y cuando noi este cargando inguna pagina cargara el marcador
+                            seleccionada.getCargar().setUrl(marcas[1]);//asigno el url del marcador
+                            seleccionada.getCargar().cargarPag();//cargo el url
                             Adelante.setEnabled(false);//desactivo el boton adelante
-                            Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));//recupero la pestaña que estoy usando
                             seleccionada.delPags();//borro todas las paginas posteriores a la que tenia
                             seleccionada.addPagina(marcas[1]);//añado la pagina a cargar al historial de la pestaña de la sesion
                             seleccionada.setNumS();//aumento el numero depaginas de la pestana en 1
