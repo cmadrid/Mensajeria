@@ -10,10 +10,13 @@ import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,6 +28,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -32,6 +36,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 
@@ -53,6 +58,7 @@ public class Navegador extends javax.swing.JFrame {
     Historial histo=null;
     int numMarca=-1;
     Map<String,String>cooks=new HashMap<>();
+    Map<String, Map<String,Cookie>> cookies= new HashMap<>();
     
     /**
      * Creates new form Navegador
@@ -103,6 +109,10 @@ public class Navegador extends javax.swing.JFrame {
         
         
         cargarArchivos();
+        
+        
+        leerCookies();
+        System.out.println(cookies);
         
         
         
@@ -167,11 +177,13 @@ public class Navegador extends javax.swing.JFrame {
         MostrarMar = new javax.swing.JToggleButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        Abrirpag = new javax.swing.JMenuItem();
+        guardarpag = new javax.swing.JMenuItem();
         definir_home = new javax.swing.JMenuItem();
-        añadir_marcador = new javax.swing.JMenuItem();
-        menu_historial = new javax.swing.JMenuItem();
         cerrar = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        añadir_marcador = new javax.swing.JMenuItem();
+        menu_historial = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -238,7 +250,24 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
-        jMenu1.setText("File");
+        jMenu1.setText("Archivo");
+
+        Abrirpag.setText("Abrir Pagina");
+        Abrirpag.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                AbrirpagActionPerformed(evt);
+            }
+        });
+        jMenu1.add(Abrirpag);
+
+        guardarpag.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        guardarpag.setText("Guardar Página");
+        guardarpag.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                guardarpagActionPerformed(evt);
+            }
+        });
+        jMenu1.add(guardarpag);
 
         definir_home.setText("Definir pagina de Inicio");
         definir_home.addActionListener(new java.awt.event.ActionListener() {
@@ -247,23 +276,6 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
         jMenu1.add(definir_home);
-
-        añadir_marcador.setText("Añadir a marcadores");
-        añadir_marcador.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                añadir_marcadorActionPerformed(evt);
-            }
-        });
-        jMenu1.add(añadir_marcador);
-
-        menu_historial.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
-        menu_historial.setText("Historial");
-        menu_historial.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                menu_historialActionPerformed(evt);
-            }
-        });
-        jMenu1.add(menu_historial);
 
         cerrar.setText("Cerrar");
         cerrar.addActionListener(new java.awt.event.ActionListener() {
@@ -275,7 +287,25 @@ public class Navegador extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu1);
 
-        jMenu2.setText("Edit");
+        jMenu2.setText("Herramientas");
+
+        añadir_marcador.setText("Añadir a marcadores");
+        añadir_marcador.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                añadir_marcadorActionPerformed(evt);
+            }
+        });
+        jMenu2.add(añadir_marcador);
+
+        menu_historial.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        menu_historial.setText("Historial");
+        menu_historial.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menu_historialActionPerformed(evt);
+            }
+        });
+        jMenu2.add(menu_historial);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -466,6 +496,11 @@ boolean crtl=false;
     private void definir_homeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_definir_homeActionPerformed
         //recupero la pestaña sobre la que estoy ubicado y obtengo su pagina actual
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+        if(seleccionada.getNum()==-1){
+            JOptionPane.showMessageDialog(este, "Ninguna página disponible.");
+            return;
+        }
+        
         home=seleccionada.getPagina();//le asigno la pagina a la variable home
         actualizarArchivo();// lo cual llamar a este metodo sobreescribira el archivo con los nuevos datos de las variables
         // TODO add your handling code here:
@@ -513,7 +548,86 @@ boolean crtl=false;
         // TODO add your handling code here:
     }//GEN-LAST:event_menu_historialActionPerformed
 
-    
+    private void AbrirpagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirpagActionPerformed
+        //recupero la activa 
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+        JFileChooser fc =new JFileChooser();
+        FileNameExtensionFilter tipo=new FileNameExtensionFilter("HTML, HTM & TXT","html","htm","txt");
+        fc.setFileFilter(tipo);
+        int result = fc.showOpenDialog(null);
+        if(result==JFileChooser.APPROVE_OPTION){
+            
+            if(!fc.getSelectedFile().exists()){
+                JOptionPane.showMessageDialog(this, "Archivo no encontrado.");
+                return;
+            }
+            
+            URI file = fc.getSelectedFile().toURI();
+            System.out.println(file);
+//            cargarArchivo(file);
+            
+            alterarHistorial(file.toString());
+            seleccionada.getCargar().setUrl(file.toString());
+            seleccionada.getCargar().cargarPag();
+            Adelante.setEnabled(false);
+            
+        }
+            
+        // TODO add your handling code here:
+    }//GEN-LAST:event_AbrirpagActionPerformed
+
+    private void guardarpagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarpagActionPerformed
+        
+         //recupero la activa 
+        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+        JFileChooser fc =new JFileChooser();
+        fc.setApproveButtonText("Guardar");
+        FileNameExtensionFilter tipo=new FileNameExtensionFilter("HTML, HTM & TXT","html","htm","txt");
+        fc.setFileFilter(tipo);
+        int result = fc.showOpenDialog(null);
+        if(result==JFileChooser.APPROVE_OPTION){
+            File file = fc.getSelectedFile();
+            
+            if(!file.getName().contains(".")){
+                System.out.println(file.getParent()+"\\"+file.getName()+".html");
+                file = new File(file.getParent()+"\\"+file.getName()+".html");
+            }
+            
+            
+            if(file.exists())
+                if(0!=JOptionPane.showConfirmDialog(este,"fichero ya existe, Modificar?"))
+                    return;
+            try {
+                BufferedWriter br = new BufferedWriter(new FileWriter(file));
+                br.write(seleccionada.getText().getText());
+                br.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+        }
+        
+        // TODO add your handling code here:
+    }//GEN-LAST:event_guardarpagActionPerformed
+
+    public void cargarArchivo(File file){
+        try {
+                BufferedReader br = new BufferedReader(new FileReader(file));
+                String linea;
+                String guardar="";
+                while((linea=br.readLine())!=null)
+                    guardar+=linea;
+                br.close();
+                Pestanas seleccionada=(Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex());
+                seleccionada.getText().setText(guardar);
+                    
+                    
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+    }
     
     
     /***************************************************************************************/
@@ -542,6 +656,7 @@ boolean crtl=false;
     
             //creo el nuevo jTextPane que se asignara a mi nueva pestaña
             JTextPane n =new JTextPane();
+            
             
             //creando JScrollPane dond voy a meter a mi JTextPane
             JScrollPane sc = new JScrollPane();////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -584,27 +699,114 @@ boolean crtl=false;
         }
     }
    
-    public void guardarCookie(String cadena){
+    public void guardarCookie(String cadena,String host){
         System.out.println("*************************************************");
-        String[] cookies =cadena.split("Set-Cookie: ");
+        String[] cookLista =cadena.split("Set-Cookie: ");
         int i =1;
-        for(i = 1;i<cookies.length;i++)
-            cooks.put("Cookie: "+cookies[i].substring(0, cookies[i].indexOf("=")), cookies[i].substring(cookies[i].indexOf("=")+1, cookies[i].indexOf("\n")));
-        System.out.println(cooks);
+        for(i = 1;i<cookLista.length;i++){
+//            cooks.put("Cookie: "+cookies[i].substring(0, cookies[i].indexOf("=")), cookies[i].substring(cookies[i].indexOf("=")+1, cookies[i].indexOf("\n")));
+//            Cookie cook = new Cookie(cookies[i]);
+            System.out.println("d");
+            System.out.println(cookLista[i].substring(0,cookLista[i].indexOf("\n")));
+            Cookie cook = new Cookie(cookLista[i].substring(0,cookLista[i].indexOf("\n")));
+            if(cookies.containsKey(host))
+                cookies.get(host).put(cook.getId(),cook);
+            else{
+                cookies.put(host, new HashMap<String, Cookie>());
+                cookies.get(host).put(cook.getId(),cook);
+            }
+            ActualizarCookies();
+        }
+        
+        System.out.println(cookies);
         System.out.println("***************************************************");
     }
- /******************************************************************************************************************************************************/
-    public String cargarCookies(){
-        Iterator it = cooks.keySet().iterator();
-        String temp;
-        String cadena="";
-        while(it.hasNext()){//testeando cookies dentro de una sesion
-            temp=(String) it.next();
-            if(!cooks.get(temp).substring(0,7).equals("deleted"))
-                cadena=cadena+temp+"="+cooks.get(temp).substring(0, cooks.get(temp).indexOf(";"))+"\n";
+    
+    
+    public void ActualizarCookies(){
+        File file = new File("cookies.txt");
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+            Iterator cookHost = cookies.keySet().iterator();
+            while(cookHost.hasNext())
+            {
+                String key = (String) cookHost.next();
+                bw.write("<"+key+"\n");
+                
+                Map<String,Cookie> temp = cookies.get(key);
+                Iterator cooks = temp.keySet().iterator();
+                
+                while(cooks.hasNext()){
+                    String key2 = (String) cooks.next();
+                    bw.write(temp.get(key2).getCookie()+"\n");
+                }
+                bw.write(">\n");
+            }
+            bw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    
+ /******************************************************************************************************************************************************/
+    public String cargarCookies(String host){
+        String cadena="";
+        Map<String,Cookie> cooks;
+        String key;
+        if(cookies.containsKey(host)){
+            cooks=cookies.get(host);
+            Iterator it = cooks.keySet().iterator();
+            while(it.hasNext()){
+                key = (String)it.next();
+                cadena += "Cookie: "+cooks.get(key).getId()+"="+cooks.get(key).getContenido()+"\n";
+                
+            }
+            
+            
+        }
+        
         return cadena;
     }
+    
+    public void leerCookies(){
+        File  ck= new File("cookies.txt");
+        
+        try{
+            
+            if(!ck.exists()){
+                BufferedWriter bw = new BufferedWriter(new FileWriter(ck));
+                bw.close();
+            }
+            
+            
+            FileReader fl=new FileReader(ck);
+            BufferedReader bf=new BufferedReader(fl);
+            String linea;
+            
+            while((linea=bf.readLine())!=null){
+                
+                if(linea.contains("<")){
+                    Map map = new HashMap();
+                    String host=linea.substring(1);
+                    while(!(linea=bf.readLine()).equals(">")){
+                        System.out.println(linea);
+                        Cookie cook = new Cookie(linea);
+                        map.put(cook.id, cook);
+                    }
+                    cookies.put(host, map);
+                    
+                }
+                    
+            }
+            
+        }catch(Exception ex){
+            System.out.println("oooo");
+        
+        }
+    }
+    
+    
     
     
 /**************************************************************************************************/
@@ -792,6 +994,7 @@ boolean crtl=false;
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem Abrirpag;
     private javax.swing.JButton Adelante;
     private javax.swing.JButton Atras;
     private javax.swing.JButton Home;
@@ -802,6 +1005,7 @@ boolean crtl=false;
     private javax.swing.JMenuItem añadir_marcador;
     private javax.swing.JMenuItem cerrar;
     private javax.swing.JMenuItem definir_home;
+    private javax.swing.JMenuItem guardarpag;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;

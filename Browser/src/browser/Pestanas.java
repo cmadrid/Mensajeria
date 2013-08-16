@@ -28,6 +28,7 @@ public class Pestanas extends javax.swing.JPanel {
     String Html;
     String Http;
     Cargar cargar;
+    String server;
     ArrayList<String> historial = new ArrayList<>();
     int num=-1;
     JTextPane text;
@@ -45,16 +46,19 @@ public class Pestanas extends javax.swing.JPanel {
         initComponents();
         Directorio=getClass().getResource("").toExternalForm();
         Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
-        try {
-            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+////            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         cerrar.setBorder(null);
         cerrar.setMargin(null);
         
     }
     
+    public void setServer(String server){
+        this.server=server;
+    }
     
      public void setCargar(Cargar cargar){
         this.cargar = cargar;
@@ -85,6 +89,10 @@ public class Pestanas extends javax.swing.JPanel {
     //añade una nueva pagina al historial de esa pestaña
     public void addPagina(String url) {
         this.historial.add(url);
+    }
+    
+    public void setPagina(String url){
+        this.historial.set(num,url);
     }
     
     //borra todas las paginas a partir de la actual
@@ -179,25 +187,35 @@ public class Pestanas extends javax.swing.JPanel {
             text.addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent e) {
                 if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    
-//                   JOptionPane.showMessageDialog( null, e.getURL().toString());
+//                   JOptionPane.showMessageDialog( null, server+e.getDescription());
                     String ref[]=e.getDescription().replaceAll("http://", "").split("/");//todo el servidor de la pagina eliminando el protocolo y todo el path
-
-                    //comprobando que sea una direccion valida
-                    System.out.println(ref[0]);
-                    if(ref[0].contains(".")){//si la direccion no contiene un '.' entonces no es una direccion valida o es una de referencia(no implementada aun)
-                       
-                       
+                    String url;
+                    
+                    if(e.getDescription().startsWith("/")&&!e.getDescription().startsWith("//"))
+                        url= server+e.getDescription();//asigno el url de la direccion a cargar
+//                    
+                    else
+                        url=e.getDescription();
+                    
+                    
+                    if(e.getDescription().startsWith("//")){
+                        url=e.getDescription();
                         
-                        cargar.setUrl(e.getURL().toExternalForm());//asigno el url de la direccion a cargar
-                        delPags();//borro todos los links de las paginas posteriores a la que me encontraba
-                        addPagina(e.getURL().toExternalForm());//añado la pagina cargada al historial de la pestaña
-                        setNumS();//aumento el valor en un sobre en el que me encontraria en la lista de historiales de la pestaña
-                        cargar.cargarPag();//cargo la pagina
+                        while(url.startsWith("/"))
+                        {
+                            url =url.substring(1);
+                        }
+                    }
+                    
+                    
+                    cargar.setUrl(url);//asigno el url de la direccion a cargar
+                    
+                    delPags();//borro todos los links de las paginas posteriores a la que me encontraba
+                    addPagina(url);//añado la pagina cargada al historial de la pestaña
+                    setNumS();//aumento el valor en un sobre en el que me encontraria en la lista de historiales de la pestaña
+                    cargar.cargarPag();//cargo la pagina
 //                        Adelante.setEnabled(false);//desactivo el boton adelante
-                   }
-                   else
-                    JOptionPane.showMessageDialog( null, "Direcciones de referencia no disponibles");
+                  
 
 
                 }
@@ -222,8 +240,14 @@ public class Pestanas extends javax.swing.JPanel {
         cerrar = new javax.swing.JButton();
         icono = new javax.swing.JLabel();
 
+        setOpaque(false);
+
         title.setText("New Tab");
 
+        cerrar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/x.png"))); // NOI18N
+        cerrar.setContentAreaFilled(false);
+        cerrar.setPressedIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/x2.png"))); // NOI18N
+        cerrar.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/x2.png"))); // NOI18N
         cerrar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 cerrarMouseEntered(evt);
@@ -249,14 +273,9 @@ public class Pestanas extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(title, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(icono, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(cerrar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(title, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(icono, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(cerrar, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -267,46 +286,43 @@ public class Pestanas extends javax.swing.JPanel {
     private void cerrarMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cerrarMouseEntered
 
 
-        try {
-            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x2.png")));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
-        }        // TODO add your handling code here:
+//        try {
+//            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x2.png")));
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
+//        }        // TODO add your handling code here:
     }//GEN-LAST:event_cerrarMouseEntered
 
     private void cerrarMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cerrarMouseExited
 
         
-        try {
-            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            cerrar.setIcon(new ImageIcon(new URL(Directorio+"imagenes/x.png")));
+//        } catch (MalformedURLException ex) {
+//            Logger.getLogger(Pestanas.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         // TODO add your handling code here:
     }//GEN-LAST:event_cerrarMouseExited
 
     private void cerrarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cerrarMouseClicked
 
         if(nav.pestañas>1){//Validacion para que siempre quede almenos una pestaña
-                    
-                    
-                    //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
-                    if(nav.getTab().getSelectedIndex()==nav.pestañas-1)
-                        nav.getTab().setSelectedIndex(nav.pestañas-2);
-                    
-                    
-                    //recuperando el indice del tab en el que se encuentra ese componente y con el elimino de los arreglos y asigno nuevo 
-                    //valores de indice a los componentes restantes posteriores
-//                    int index=nueva.getIndex();
-                    int index =nav.getTab().indexOfTabComponent(this);
-                    System.out.println(nav.getTab().indexOfTabComponent(this));
-                    nav.getTab().remove(index);
-                    nav.pestañas--;
-                    getCargar().detener();
-                    
-                    
-                }else System.exit(0);
-        
+
+            //validando para que nunca quede activada la ultima pestaña(pestaña de agregacion '+')
+            if(nav.getTab().getSelectedIndex()==nav.pestañas-1)
+            nav.getTab().setSelectedIndex(nav.pestañas-2);
+
+            //recuperando el indice del tab en el que se encuentra ese componente y con el elimino de los arreglos y asigno nuevo
+            //valores de indice a los componentes restantes posteriores
+            //                    int index=nueva.getIndex();
+            int index =nav.getTab().indexOfTabComponent(this);
+            System.out.println(nav.getTab().indexOfTabComponent(this));
+            nav.getTab().remove(index);
+            nav.pestañas--;
+            getCargar().detener();
+
+        }else System.exit(0);
+
         // TODO add your handling code here:
     }//GEN-LAST:event_cerrarMouseClicked
 

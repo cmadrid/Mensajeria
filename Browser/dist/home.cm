@@ -1,6 +1,14 @@
-http://www.cs.bham.ac.uk/~tpc/testpages/
+<HOME>http://www.cs.bham.ac.uk/~tpc/testpages/</HOME>
 
-<INICIO MARCADORES>
-prueba1#http://www.cs.bham.ac.uk/~tpc/testpages/
-prueba2#http://sheldonbrown.com/web_sample1.html
-<FIN MARCADORES>
+<MARCADORES>
+pagina1#http://www.cs.bham.ac.uk/~tpc/testpages/
+pagina2#http://sheldonbrown.com/web_sample1.html
+pagina1#http://www.cs.bham.ac.uk/~tpc/testpages/
+pagina2#http://sheldonbrown.com/web_sample1.html
+</MARCADORES>
+
+<HISTORIAL>
+www.cs.bham.ac.uk/~tpc/testpages/#www.cs.bham.ac.uk/~tpc/testpages/
+</HISTORIAL>
+
+<FIN>
