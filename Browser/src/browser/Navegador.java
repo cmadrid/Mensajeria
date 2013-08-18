@@ -41,14 +41,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 
 /**
- *
- * @author Cesar Madrid
+ * La clase principal donde está contenido lo del navegador web
+ * @author Cesar Madrid, Marlon Espinoza, Ruben Carvajal
  */
 public class Navegador extends javax.swing.JFrame {
 
+    String NOMBRE="YasunET 1.0";
     Socket conexion ;
     Navegador este = this;
-    String Directorio;
     String Html="";
     String Respuesta="";
     int pestañas=0;
@@ -59,78 +59,30 @@ public class Navegador extends javax.swing.JFrame {
     int numMarca=-1;
     Map<String,String>cooks=new HashMap<>();
     Map<String, Map<String,Cookie>> cookies= new HashMap<>();
+    About about = new About();
+    
+    
+    
     
     /**
-     * Creates new form Navegador
+     * Constructor del Navegador. Se añaden todas las funcionalidades y botones que tiene un navegador
      */
-    public JTextField getUrl(){
-        return url;
-    }
-    
-    public JTabbedPane getTab(){
-        return Tab1;
-    }
-    
-    public JButton getAtras(){
-        return Atras;
-    }
     public Navegador() {
         initComponents();
+        setTitle(NOMBRE);
+        este.setLocationRelativeTo(null);
+        Image icon = new ImageIcon(getClass().getResource("logo.png")).getImage();
+        setIconImage(icon);
         MarcadoresPanel.setLayout(new FlowLayout(0));
         MarcadoresPanel.setVisible(false);
-        
-        //directorio dond localizar los recursos
-        Directorio=getClass().getResource("").toExternalForm();
-        Directorio=(String) Directorio.subSequence(0, Directorio.length()-8);
-        
-        
-        //Añadiendo iconos a los botones
-        ImageIcon atras=new ImageIcon();
-        ImageIcon adelante=new ImageIcon();
-        ImageIcon recargar=new ImageIcon();
-        ImageIcon home=new ImageIcon();
-        try {
-            atras = new ImageIcon(new URL(Directorio+"imagenes/izquierda.png"));
-            adelante = new ImageIcon(new URL(Directorio+"imagenes/derecha.png"));
-            recargar = new ImageIcon(new URL(Directorio+"imagenes/actualizar.png"));
-            home = new ImageIcon(new URL(Directorio+"imagenes/home.png"));
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(Navegador.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        Icon icono = new ImageIcon(atras.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
-        Atras.setIcon(icono);
-        icono = new ImageIcon(adelante.getImage().getScaledInstance(30, 23, Image.SCALE_DEFAULT));
-        Adelante.setIcon(icono);
-        icono = new ImageIcon(recargar.getImage().getScaledInstance(23, 23, Image.SCALE_DEFAULT));
-        Recargar.setIcon(icono);
-        icono = new ImageIcon(home.getImage().getScaledInstance(23, 23, Image.SCALE_DEFAULT));
-        Home.setIcon(icono);
-        
         
         
         cargarArchivos();
         
         
         leerCookies();
-        System.out.println(cookies);
         
-        
-        
-        
-        
- //*************************************************************************************************************
-        //leer archivos dentro del .jar: leer la informacion de home
-//        try {
-//            InputStream in = Navegador.class.getClassLoader().getResourceAsStream("archivos/home.cm");
-//            BufferedReader buff = new BufferedReader(new InputStreamReader(in));
-//            home=buff.readLine();
-//        } catch (Exception ex) {
-//         
-//            JOptionPane.showMessageDialog(null, "error: "+ex.getMessage());
-//        }
-        
-   //******************************************************************************************************************     
-        
+      
         
        
         //creando y añadiendo los popmenu a las pestañas
@@ -154,6 +106,31 @@ public class Navegador extends javax.swing.JFrame {
         
 
     }
+    
+    
+    
+    /**
+     * Getter de la url
+     * @return texto de la url
+     */
+    public JTextField getUrl(){
+        return url;
+    }
+    /**
+     * Getter de una pestaña
+     * @return Tab1 que es la pantalla y la pestaña de una página
+     */
+    public JTabbedPane getTab(){
+        return Tab1;
+    }
+    /**
+     * Getter del botón atrás
+     * @return Atras es solo el botón para regresar a la página anterior
+     */
+    public JButton getAtras(){
+        return Atras;
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -184,9 +161,16 @@ public class Navegador extends javax.swing.JFrame {
         jMenu2 = new javax.swing.JMenu();
         añadir_marcador = new javax.swing.JMenuItem();
         menu_historial = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                formComponentResized(evt);
+            }
+        });
 
+        url.setFont(new java.awt.Font("Kristen ITC", 0, 18)); // NOI18N
         url.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 urlKeyReleased(evt);
@@ -196,36 +180,58 @@ public class Navegador extends javax.swing.JFrame {
             }
         });
 
+        Atras.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/izq.png"))); // NOI18N
+        Atras.setBorderPainted(false);
+        Atras.setContentAreaFilled(false);
         Atras.setEnabled(false);
+        Atras.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/izq2.png"))); // NOI18N
         Atras.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 AtrasMouseReleased(evt);
             }
         });
 
+        Adelante.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/der.png"))); // NOI18N
+        Adelante.setBorderPainted(false);
+        Adelante.setContentAreaFilled(false);
         Adelante.setEnabled(false);
+        Adelante.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/der2.png"))); // NOI18N
         Adelante.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 AdelanteMouseReleased(evt);
             }
         });
 
+        Recargar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/rec.png"))); // NOI18N
+        Recargar.setBorderPainted(false);
+        Recargar.setContentAreaFilled(false);
+        Recargar.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/rec2.png"))); // NOI18N
         Recargar.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 RecargarMouseReleased(evt);
             }
         });
 
+        Tab1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
         Tab1.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 Tab1StateChanged(evt);
             }
         });
 
+        jTextPane1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                jTextPane1MouseEntered(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTextPane1);
 
         Tab1.addTab("+", jScrollPane1);
 
+        Home.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/hom.png"))); // NOI18N
+        Home.setBorderPainted(false);
+        Home.setContentAreaFilled(false);
+        Home.setRolloverIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/hom2.png"))); // NOI18N
         Home.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseReleased(java.awt.event.MouseEvent evt) {
                 HomeMouseReleased(evt);
@@ -306,6 +312,14 @@ public class Navegador extends javax.swing.JFrame {
         });
         jMenu2.add(menu_historial);
 
+        jMenuItem1.setText("About");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem1);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -320,15 +334,15 @@ public class Navegador extends javax.swing.JFrame {
                     .addComponent(MarcadoresPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(Tab1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(Atras)
+                        .addComponent(Atras, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Adelante)
+                        .addComponent(Adelante, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Recargar)
+                        .addComponent(Recargar, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(Home)
+                        .addComponent(Home, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 805, Short.MAX_VALUE)
+                        .addComponent(url, javax.swing.GroupLayout.DEFAULT_SIZE, 817, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(MostrarMar)))
                 .addContainerGap())
@@ -338,23 +352,28 @@ public class Navegador extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(Adelante, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(Recargar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(Adelante, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(Recargar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(Atras)
-                        .addComponent(Home)
-                        .addComponent(MostrarMar)))
+                        .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Atras, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(Home, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(MostrarMar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(MarcadoresPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+                .addComponent(Tab1, javax.swing.GroupLayout.DEFAULT_SIZE, 398, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 boolean crtl=false;
+    /**
+     * Se activa cuando se presionan botones sobre el campo de direcciones
+     * @param evt si la tecla presionada es ENTER y la misma dirección no ha sido cargada, entonces se ejecuta 
+     * la nueva dirección
+     */
     private void urlKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_urlKeyPressed
 
         int key=evt.getKeyCode();
@@ -382,7 +401,10 @@ boolean crtl=false;
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_urlKeyPressed
-
+    /**
+     * Cuando se suelta el botón atrás se regresa a la página anterior mientras haya
+     * @param evt evento de soltar un botón (casi como dar clic) 
+     */
     private void AtrasMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AtrasMouseReleased
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));//recupero la pestaña actual
         //verifico que el boton atras este activado y no este cargando una pagina
@@ -393,11 +415,14 @@ boolean crtl=false;
             Adelante.setEnabled(true);
             if(seleccionada.getNum()==0)//si ya estoy apuntando al index 0 de mi lista se deshabilita el boton atras
                 Atras.setEnabled(false);
-            System.out.println(seleccionada.getNum());
         }
         // TODO add your handling code here:
     }//GEN-LAST:event_AtrasMouseReleased
-
+    
+    /**
+     * Cuando se da suelta el botón adelante va a la página siguiente mientras haya
+     * @param evt evento de soltar un botón (casi como dar clic) 
+     */
     private void AdelanteMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AdelanteMouseReleased
         
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
@@ -414,6 +439,10 @@ boolean crtl=false;
     }//GEN-LAST:event_AdelanteMouseReleased
 
     //boton recargar de la aplicacion
+    /**
+     * Cuando se suelta el botón actualizar se recarga la página actual
+     * @param evt evento de soltar un botón (casi como dar clic) 
+     */
     private void RecargarMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_RecargarMouseReleased
         
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
@@ -432,6 +461,10 @@ boolean crtl=false;
     }//GEN-LAST:event_urlKeyReleased
 
     //esta funcion manda a cerrar la aplicacion
+    /**
+     * Cierra todo
+     * @param evt evento de cerrar el programa
+     */
     private void cerrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cerrarActionPerformed
 
         System.exit(0);
@@ -439,6 +472,10 @@ boolean crtl=false;
     }//GEN-LAST:event_cerrarActionPerformed
 
     //cambios de pestaña en mi tab
+    /**
+     * Cambios entre pestañas
+     * @param evt evento de seleccionar otra pestaña
+     */
     private void Tab1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_Tab1StateChanged
         //detecto si el cambio fue realizado a el ultimo tab designado para abrir nuevas pestañas, de ser asi llama a la funcion
         if(Tab1.getSelectedIndex()==pestañas){
@@ -452,7 +489,7 @@ boolean crtl=false;
             {
                 
                 Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
-                setTitle(((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getTitle());//agrego a la ventana el titulo de la pestaña seleccionada
+                setTitle(((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getTitle()+" - "+NOMBRE);//agrego a la ventana el titulo de la pestaña seleccionada
                 actualizarBtns();//actualizo los botones de historial de la pestaña
                 if(seleccionada.getNum()==-1)
                     url.setText("");//en caso de ser pestaña nueva pestaña quitar el url
@@ -466,6 +503,10 @@ boolean crtl=false;
     }//GEN-LAST:event_Tab1StateChanged
 
     //accion del boton home o pagina de inicio
+    /**
+     * Al soltar el botón Home, nos envía a la pagina home
+     * @param evt evento de soltar un botón después de presionarlo
+     */
     private void HomeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_HomeMouseReleased
 
         
@@ -482,6 +523,10 @@ boolean crtl=false;
     }//GEN-LAST:event_HomeMouseReleased
     
     //metodo que actualiza el historial de mi pestaña
+    /**
+     * Método para la funcionalidad del botón adelante, cuando abre una nueva página
+     * @param pag dirección de la última url
+     */
     public void alterarHistorial(String pag){
         //recupero la pestaña seleccionada
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
@@ -493,6 +538,10 @@ boolean crtl=false;
     }
     
     //accion del boton home(pagina de inicio)
+    /**
+     * Define la nueva página home, se selecciona como home la página actual en la que se encuentra
+     * @param evt evento de dar clic sobre esta opción del menú
+     */
     private void definir_homeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_definir_homeActionPerformed
         //recupero la pestaña sobre la que estoy ubicado y obtengo su pagina actual
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
@@ -507,6 +556,11 @@ boolean crtl=false;
     }//GEN-LAST:event_definir_homeActionPerformed
 
     //evento de cambio de estado del boton para mostrar marcadores
+    /**
+     * Muestra o oculta los marcadores
+     * @param evt Es el evento del estado del botón marcadores, si está activado muestra el panel con los marcadores escogidos, sino
+     * permanece oculto
+     */
     private void MostrarMarStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_MostrarMarStateChanged
 
         //si elboton esta activado mostrara el panel de marcadores, caso contrario lo ocultara
@@ -518,27 +572,43 @@ boolean crtl=false;
     }//GEN-LAST:event_MostrarMarStateChanged
 
     //agrega un nuevo marcador a la lista
+    /**
+     * Añade la página actual a la lista de marcadores
+     * @param evt Evento de presionar "Definir página de inicio" en Archivo de la barra de menú
+     */
     private void añadir_marcadorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_añadir_marcadorActionPerformed
-        
-        //recupero la activa 
-        Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
-        if(seleccionada.getNum()>-1){
-            crearMarcador(seleccionada.getTitle()+"#"+seleccionada.getPagina());//llamo a la funcion crearMarcador mandandole el titulo y el link de la pag actual
-            actualizarArchivo();//actualizo el archivo con las nuevas variables
-            MarcadoresPanel.setVisible(false);//oculto el panel
-            if(MostrarMar.isSelected())//y si el boton esta activado lo vuelvo a mostrar
-            MarcadoresPanel.setVisible(true);
-        }
+
+        if(MarcadoresPanel.getComponents().length<7)
+        {//no permito mas de 7 marcadores almacenados
+            
+            //recupero la activa 
+            Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
+            if(seleccionada.getNum()>-1){
+                crearMarcador(seleccionada.getTitle()+"#"+seleccionada.getPagina());//llamo a la funcion crearMarcador mandandole el titulo y el link de la pag actual
+                actualizarArchivo();//actualizo el archivo con las nuevas variables
+                MarcadoresPanel.setVisible(false);//oculto el panel
+                if(MostrarMar.isSelected())//y si el boton esta activado lo vuelvo a mostrar
+                MarcadoresPanel.setVisible(true);
+            }
+            
+            
+        }else
+            JOptionPane.showMessageDialog(este, "No se pueden almacenar mas marcadores.");
         
         // TODO add your handling code here:
     }//GEN-LAST:event_añadir_marcadorActionPerformed
 
     
-    //evento para abir la ventana de historiales
+    //evento para abir la ventana de historial 
+    /**
+     * Muestra la pantalla del historial
+     * @param evt Evento de presionar la opción historial en herramientas de la barra de menú
+     */
     private void menu_historialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menu_historialActionPerformed
         //si no esta instanceada la ventana la intancio y la llamo
         if(histo==null){
             histo = new Historial(este);
+            histo.setLocationRelativeTo(este);
             histo.setHisto(historial);//le mando la lista de historiales de todo el navegador
             histo.setVisible(true);
         }//en caso q ya este en pantalla
@@ -547,11 +617,15 @@ boolean crtl=false;
 
         // TODO add your handling code here:
     }//GEN-LAST:event_menu_historialActionPerformed
-
+    /**
+     * Para abrir una pagina guardada en algún directorio
+     * @param evt evento al escoger la opción de Abrir Página en el menú
+     */
     private void AbrirpagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_AbrirpagActionPerformed
         //recupero la activa 
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
         JFileChooser fc =new JFileChooser();
+        fc.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter tipo=new FileNameExtensionFilter("HTML, HTM & TXT","html","htm","txt");
         fc.setFileFilter(tipo);
         int result = fc.showOpenDialog(null);
@@ -563,8 +637,6 @@ boolean crtl=false;
             }
             
             URI file = fc.getSelectedFile().toURI();
-            System.out.println(file);
-//            cargarArchivo(file);
             
             alterarHistorial(file.toString());
             seleccionada.getCargar().setUrl(file.toString());
@@ -575,23 +647,27 @@ boolean crtl=false;
             
         // TODO add your handling code here:
     }//GEN-LAST:event_AbrirpagActionPerformed
-
+    /**
+     * Para guardar una página en algún directorio que indique el usuario
+     * @param evt Evento al escoger la opción "Guardar página" en Archivo de la barra del menú
+     */
     private void guardarpagActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guardarpagActionPerformed
         
          //recupero la activa 
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
         JFileChooser fc =new JFileChooser();
+        fc.setApproveButtonToolTipText("Guardar el archivo.");
         fc.setApproveButtonText("Guardar");
+        fc.setAcceptAllFileFilterUsed(false);
         FileNameExtensionFilter tipo=new FileNameExtensionFilter("HTML, HTM & TXT","html","htm","txt");
         fc.setFileFilter(tipo);
         int result = fc.showOpenDialog(null);
         if(result==JFileChooser.APPROVE_OPTION){
             File file = fc.getSelectedFile();
             
-            if(!file.getName().contains(".")){
-                System.out.println(file.getParent()+"\\"+file.getName()+".html");
+            if(!file.getName().contains("."))
                 file = new File(file.getParent()+"\\"+file.getName()+".html");
-            }
+            
             
             
             if(file.exists())
@@ -610,6 +686,55 @@ boolean crtl=false;
         // TODO add your handling code here:
     }//GEN-LAST:event_guardarpagActionPerformed
 
+    private void jTextPane1MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTextPane1MouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextPane1MouseEntered
+
+    /**
+     * en este evento acomodo los marcadores al tamaño de la ventana para que no se salga de ella
+     * @param evt evento que detecta si la la ventana ha variado de tamaño
+     */
+
+
+    private void formComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentResized
+
+        
+        if(MarcadoresPanel.getComponents().length!=0){
+            
+            int size=MarcadoresPanel.getComponents().length;
+            int cant=este.getWidth()/159;
+            if(cant==0)
+                cant++;
+            if(size>cant){
+                    for(int i = 0; i<cant+1;i++){
+                        MarcadoresPanel.getComponents()[i].setVisible(true);
+                    }
+                    for(int i = cant; i<size;i++){
+                        MarcadoresPanel.getComponents()[i].setVisible(false);
+                    }
+                }
+            else
+                for(int i = 0 ; i< size;i++)
+                    MarcadoresPanel.getComponents()[i].setVisible(true);
+        }
+        
+        // TODO add your handling code here:
+    }//GEN-LAST:event_formComponentResized
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+
+        
+        if(about.isVisible()==false)
+            about.setLocationRelativeTo(este);
+        about.setVisible(true);
+        
+        
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    /**
+     * Método para cargar una página guardada
+     * @param file Ruta del archivo
+     */
     public void cargarArchivo(File file){
         try {
                 BufferedReader br = new BufferedReader(new FileReader(file));
@@ -632,6 +757,9 @@ boolean crtl=false;
     
     /***************************************************************************************/
     //actualizo el estado de los botones adelante y atras dependiendo de en q punto de la lista del historialde esapestaña me encuentre
+    /**
+     * Méotodo para actualizar los botones de Adelante o Atrás según la pestaña
+     */
     public void actualizarBtns(){///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
@@ -651,6 +779,9 @@ boolean crtl=false;
     
     
  /************************************CREAR PESTAÑAS*****************************************/
+    /**
+     * Crea una pestaña nueva con una nueva instancia del JTextPane contenido
+     */
     public void crearPestaña(){
         
     
@@ -690,6 +821,10 @@ boolean crtl=false;
         
     }
 /***********************************************FIN CREAR PESTAÑAS**************************************************************************************/    
+    /**
+     * Carga el historial
+     * @param aCargar Dirección nueva para cargar en el navegador
+     */
     public void cargarHistorial(String aCargar){ 
         Pestanas seleccionada = ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex()));
               
@@ -698,16 +833,16 @@ boolean crtl=false;
             seleccionada.getCargar().cargarPag();
         }
     }
-   
+    /**
+     * Lee las cookies que llegan de una página y las guarda en el HashMap cookies
+     * @param cadena Es toda la cadena que llega como cookie, la cual va a ser tratada para guardarla correctamente
+     * @param host La dirección de la página que se está abriendo, sería la llave para guardarlo en cookies
+     */
     public void guardarCookie(String cadena,String host){
-        System.out.println("*************************************************");
         String[] cookLista =cadena.split("Set-Cookie: ");
         int i =1;
         for(i = 1;i<cookLista.length;i++){
-//            cooks.put("Cookie: "+cookies[i].substring(0, cookies[i].indexOf("=")), cookies[i].substring(cookies[i].indexOf("=")+1, cookies[i].indexOf("\n")));
-//            Cookie cook = new Cookie(cookies[i]);
-            System.out.println("d");
-            System.out.println(cookLista[i].substring(0,cookLista[i].indexOf("\n")));
+            
             Cookie cook = new Cookie(cookLista[i].substring(0,cookLista[i].indexOf("\n")));
             if(cookies.containsKey(host))
                 cookies.get(host).put(cook.getId(),cook);
@@ -718,11 +853,11 @@ boolean crtl=false;
             ActualizarCookies();
         }
         
-        System.out.println(cookies);
-        System.out.println("***************************************************");
     }
     
-    
+    /**
+     * Actualiza las cookies guardadas en el archivo cookies.txt con su formato
+     */
     public void ActualizarCookies(){
         File file = new File("cookies.txt");
         try {
@@ -750,6 +885,11 @@ boolean crtl=false;
     
     
  /******************************************************************************************************************************************************/
+    /**
+     * Carga un cookie del HashMap Cookies y lo devuelve en una cadena
+     * @param host Ruta host de una página, funciona como llave de Cookies
+     * @return una cadena de String de un cookie
+     */
     public String cargarCookies(String host){
         String cadena="";
         Map<String,Cookie> cooks;
@@ -768,7 +908,9 @@ boolean crtl=false;
         
         return cadena;
     }
-    
+    /**
+     * Lee todas las cookies almacenadas del archivo cookies.txt y los guarda en el HashMap cookies
+     */
     public void leerCookies(){
         File  ck= new File("cookies.txt");
         
@@ -790,7 +932,6 @@ boolean crtl=false;
                     Map map = new HashMap();
                     String host=linea.substring(1);
                     while(!(linea=bf.readLine()).equals(">")){
-                        System.out.println(linea);
                         Cookie cook = new Cookie(linea);
                         map.put(cook.id, cook);
                     }
@@ -801,7 +942,7 @@ boolean crtl=false;
             }
             
         }catch(Exception ex){
-            System.out.println("oooo");
+            System.out.println("Error en leer cookies: "+ex.getMessage());
         
         }
     }
@@ -813,6 +954,9 @@ boolean crtl=false;
 
     
     //muestra la pagina tal como se debe ver
+    /**
+     * Método para ver una página como lo debe ver un navegador 
+     */
     public void verPag(){
         
         ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getText().setContentType("text/html");//le programo que lea html
@@ -820,6 +964,9 @@ boolean crtl=false;
     }
     
     //muestra la respuesta del requerimiento HTTP
+    /**
+     * Método para ver la respuesta del requerimiento HTTP de una página
+     */
     public void verHttp(){
         
         ((Pestanas)Tab1.getTabComponentAt(Tab1.getSelectedIndex())).getText().setContentType("text/text");//le programo q muestre el texto como lo mando
@@ -827,6 +974,9 @@ boolean crtl=false;
     }
     
     //funcion para escribir el archivo de configuraciones
+    /**
+     * Actualiza el Archivo home.cm, que contiene diversa informacion; La página home, las páginas de marcadores y el historial
+     */
     public void actualizarArchivo(){
         File homepag= new File("home.cm");//archivo el cual voy a modificar
         try {
@@ -856,20 +1006,23 @@ boolean crtl=false;
         
         
     }
-    
+    /**
+     * Lee el archivo home.cm con toda su información; Lee la página home, los marcadores y el historial
+     */
     public void cargarArchivos(){
         File homepag=new File("home.cm");
         try {
             //verificando si ya esxiste el archivo... de no ser asi lo crea
             if(!homepag.exists()){
                 home="http://www.cs.bham.ac.uk/~tpc/testpages/";
-                marcadores.add("pagina1#http://www.cs.bham.ac.uk/~tpc/testpages/");
-                marcadores.add("pagina2#http://sheldonbrown.com/web_sample1.html");
+//                marcadores.add("pagina1#http://www.cs.bham.ac.uk/~tpc/testpages/");
+//                marcadores.add("pagina2#http://sheldonbrown.com/web_sample1.html");
                 actualizarArchivo();
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "error :"+e.getMessage());
         }
+        
         
         //lectura del archivo de configuraciones.
         try {
@@ -898,6 +1051,11 @@ boolean crtl=false;
     }
     
     //funcion para crear un nuevo marcador
+    /**
+     * En la lista maracadores se almacena un nuevo marcador y lo crea como un botón nuevo además de asignarle la opción
+     * eliminar de marcadores
+     * @param marca Es una dirección que va a ser almacenada como marcador
+     */
     public void crearMarcador(String marca){
         marcadores.add(marca);//recibo un string de la forma nombre#link para añadir a marcadores
                 final String marcas[]=marca.split("#");//separo el nombre dellink
@@ -951,7 +1109,12 @@ boolean crtl=false;
     }
     
     //actualizo el historial del navegador
+    /**
+     * Actualiza la lista historial por cada url ingresada
+     * @param Url 
+     */
     public void actualizarHistorial(String Url){
+        Url=Url.replaceAll("\n", "");
         if(historial.contains(Url))//valido si esa pagina ya esta contenida en la lista del url 
             historial.remove(historial.indexOf(Url));//en caso de esta contenida la elimino
         historial.add(Url);//y la añado al final de la lista
@@ -1009,6 +1172,7 @@ boolean crtl=false;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPopupMenu jPopupMenu1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextPane jTextPane1;

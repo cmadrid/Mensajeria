@@ -1,0 +1,9 @@
+Esta aplicacion necesita permisos de escritura junto al ejecutable... para guardar las cookies y archivos de configuracion
+
+Esta aplicacion fue creada con netbeans 7.3 y jdk 7u25
+
+Este navegador cuenta con marcadores (Inicialmente vacio) los cuales se muestran y ocultan con un boton a la derecha de la barra de direccion
+
+para borrar un marcador se da click derecho sobre el deseado y eliminar (Solo se admiten hasta 7)
+
+Se puede ver la respuesta del requerimiento de la paginadando click derecho sobre la pestaña deseada y poniendo mostrar HTTP

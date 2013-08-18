@@ -5,8 +5,9 @@
 package browser;
 
 /**
- *
+ * Clase main del navegador
  * @author Cesar Madrid
+ * 
  */
 public class Browser {
 
